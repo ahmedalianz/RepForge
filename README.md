@@ -24,8 +24,8 @@ This is a **failure laboratory**, not a polished product app.
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| 1 | Clean shell, navigation, Home, Diagnostics, empty feature modules | **Current** |
-| 2 | Push Notifications | Pending |
+| 1 | Clean shell, navigation, Home, Diagnostics, empty feature modules | Done |
+| 2 | Push Notifications | **Current** |
 | 3 | Deep Linking | Pending |
 | 4 | SSL Pinning | Pending |
 

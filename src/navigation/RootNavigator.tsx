@@ -5,7 +5,10 @@ import RNBootSplash from 'react-native-bootsplash';
 import {DiagnosticsScreen, setNavigationReady} from '../features/diagnostics';
 import {DeepLinkingPlaygroundScreen} from '../features/deepLinking';
 import {HomeScreen} from '../features/home';
-import {NotificationsPlaygroundScreen} from '../features/notifications';
+import {
+  NotificationService,
+  NotificationsPlaygroundScreen,
+} from '../features/notifications';
 import {SslPinningPlaygroundScreen} from '../features/sslPinning';
 import {logEvent} from '../services/logging';
 import {colors} from '../theme';
@@ -27,6 +30,7 @@ export function RootNavigator() {
       event: 'ROOT_NAVIGATOR_MOUNTED',
       result: 'ok',
     });
+    NotificationService.initialize().catch(() => undefined);
   }, []);
 
   return (
@@ -38,6 +42,7 @@ export function RootNavigator() {
           event: 'NAVIGATION_READY',
           result: 'ok',
         });
+        NotificationService.onNavigationReady().catch(() => undefined);
         RNBootSplash.hide({fade: true}).catch(() => {
           // Native splash may already be dismissed in some reload paths.
         });

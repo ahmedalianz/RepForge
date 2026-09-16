@@ -1,27 +1,63 @@
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import {Screen} from '../../../components/Screen';
-import {SectionCard} from '../../../components/SectionCard';
 import {colors, typography} from '../../../theme';
+import {AppStatePanel} from '../components/AppStatePanel';
+import {NotificationEventLog} from '../components/NotificationEventLog';
+import {PermissionPanel} from '../components/PermissionPanel';
+import {SimulationPanel} from '../components/SimulationPanel';
+import {TokenPanel} from '../components/TokenPanel';
+import {useNotificationPlayground} from '../hooks/useNotificationPlayground';
 
-/**
- * Placeholder for Phase 2 — Push Notifications playground.
- * Implementation intentionally deferred until the shell is verified.
- */
 export function NotificationsPlaygroundScreen() {
+  const playground = useNotificationPlayground();
+  const {snapshot} = playground;
+console.log(snapshot)
   return (
     <Screen>
       <Text style={styles.lead}>
-        Module scaffold only. Permissions, token lifecycle, delivery states,
-        and the Notification Event Log land in Phase 2.
+        Push notification failure laboratory. Remote FCM/APNs transport is not
+        configured yet — use simulations to exercise the same service pipeline.
       </Text>
-      <SectionCard title="Planned experiments" meta="empty">
-        <Text style={styles.item}>• Permission request / denied / provisional</Text>
-        <Text style={styles.item}>• APNs vs FCM token lifecycle</Text>
-        <Text style={styles.item}>• Foreground / background / killed</Text>
-        <Text style={styles.item}>• Data + deep-link payloads</Text>
-        <Text style={styles.item}>• Duplicate / cold-start race labs</Text>
-      </SectionCard>
+
+      <PermissionPanel
+        status={snapshot.permissionStatus}
+        busy={playground.busy}
+        onCheck={playground.checkPermission}
+        onRequest={playground.requestPermission}
+        onOpenSettings={playground.openSettings}
+      />
+
+      <TokenPanel
+        token={snapshot.token}
+        tokenStatus={snapshot.tokenStatus}
+        remoteTransport={snapshot.remoteTransport}
+        busy={playground.busy}
+        onGet={playground.getToken}
+        onRefresh={playground.refreshToken}
+        onClear={playground.clearToken}
+      />
+
+      <AppStatePanel
+        appState={snapshot.appState}
+        lastChangeAt={snapshot.lastAppStateChangeAt}
+        pendingCount={snapshot.pendingCount}
+      />
+
+      <SimulationPanel
+        busy={playground.busy}
+        onForeground={playground.simulateForeground}
+        onTap={playground.simulateTap}
+        onInitial={playground.simulateInitial}
+        onDuplicate={playground.simulateDuplicate}
+        onInvalid={playground.simulateInvalid}
+        onTokenRefresh={playground.simulateTokenRefresh}
+      />
+
+      <NotificationEventLog
+        entries={playground.logs}
+        onClear={playground.clearLogs}
+      />
     </Screen>
   );
 }
@@ -30,9 +66,5 @@ const styles = StyleSheet.create({
   lead: {
     ...typography.body,
     color: colors.text.secondary,
-  },
-  item: {
-    ...typography.body,
-    color: colors.text.primary,
   },
 });

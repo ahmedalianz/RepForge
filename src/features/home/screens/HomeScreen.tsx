@@ -21,7 +21,7 @@ const SECTIONS: Array<{
     description:
       'Permissions, token lifecycle, foreground/background/killed delivery, and navigation from payload data.',
     route: 'Notifications',
-    meta: 'Phase 2',
+    meta: 'Ready',
   },
   {
     title: 'Deep Linking',
