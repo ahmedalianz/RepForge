@@ -1,40 +1,31 @@
-/**
- * Advanced React Native Playground
- *
- * @format
- */
-
-import {StatusBar, StyleSheet} from 'react-native';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {RootNavigator} from './src/navigation/RootNavigator';
-import {logEvent} from './src/services/logging';
-import {colors} from './src/theme';
-
-logEvent({
-  module: 'app',
-  event: 'APP_MODULE_EVALUATED',
-  result: 'ok',
-});
-
-function App() {
+import { StatusBar, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider, useTheme } from './src/app/theme/ThemeProvider';
+import { DatabaseProvider } from './src/app/providers/DatabaseProvider';
+import { RootNavigator } from './src/app/navigation/RootNavigator';
+function AppContent() {
+  const { mode } = useTheme();
+  return (
+    <>
+      <StatusBar
+        barStyle={mode === 'dark' ? 'light-content' : 'dark-content'}
+      />
+      <DatabaseProvider>
+        <RootNavigator />
+      </DatabaseProvider>
+    </>
+  );
+}
+export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor={colors.background}
-        />
-        <RootNavigator />
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-});
-
-export default App;
+const styles = StyleSheet.create({ root: { flex: 1 } });

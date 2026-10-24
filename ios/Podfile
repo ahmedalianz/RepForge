@@ -5,11 +5,6 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-# RNFirebase v26 defaults to resolving firebase-ios-sdk via SPM.
-# SPM products + static linkage collide (duplicate symbols). Opt out of SPM so
-# Firebase pods resolve via CocoaPods instead. Must be set before the target.
-$RNFirebaseDisableSPM = true
-
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
@@ -19,7 +14,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'RNLab' do
+target 'RepForge' do
   config = use_native_modules!
 
   use_react_native!(
@@ -27,11 +22,6 @@ target 'RNLab' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-
-  # Firebase Swift pods (static linkage) need module maps for their ObjC deps.
-  pod 'GoogleUtilities', :modular_headers => true
-  pod 'FirebaseCore', :modular_headers => true
-  pod 'FirebaseCoreInternal', :modular_headers => true
 
   post_install do |installer|
     react_native_post_install(

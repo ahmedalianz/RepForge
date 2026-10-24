@@ -1,3 +1,4 @@
 <resources>
-    <color name="bootsplash_background">#131313</color>
+    <!-- Native launch chrome mirrors the Kinetic Obsidian canvas. -->
+    <color name="repforge_background">#101419</color>
 </resources>

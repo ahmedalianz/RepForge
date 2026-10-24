@@ -1,8 +1,8 @@
 ---
-description: Enforce RN Lab AGENTS.md engineering standards on every change
+description: Enforce RepForge AGENTS.md engineering standards on every change
 alwaysApply: false
 ---
-# RN Lab — AGENTS.md
+# RepForge — AGENTS.md
 
 Follow `/AGENTS.md` for all work in this repository. Non-negotiable summary:
 
@@ -13,14 +13,12 @@ Follow `/AGENTS.md` for all work in this repository. Non-negotiable summary:
 
 ## Architecture
 - Screens orchestrate; components present; hooks own reusable state/behavior; domain modules own pure logic.
-- Stay consistent with existing folders: `src/components`, `src/screens`, `src/hooks`, `src/theme`, `src/data`.
+- Stay consistent with existing folders: `src/app`, `src/features`, `src/shared`, `src/database`.
 - Prefer feature-local modules when an experiment grows (constants, types, hooks) — do not dump everything in one giant screen file.
 
 ## Design system
-- Use tokens from `src/theme` (`colors`, `spacing`, `radii`, `typography`, `categoryColors`).
-- Prefer shared experiment UI from `src/components/experiment` and `src/components/LabUI`:
-  - `ExperimentHeader`, `CodeBlock`, `MetricGrid`, `MetricCard`, `QueuePanel`
-  - `ExperimentActions`, `ColoredTerminal` / `TerminalLog`, `SectionHeader`, `ExperimentNote`
+- Use tokens from `src/app/theme` (`colors`, `spacing`, `radii`, `typography`, `categoryColors`).
+- Reuse primitives from `src/shared/components`; compose feature-specific content.
 - Do not invent one-off colors, radii, or button styles when tokens/components exist.
 
 ## Quality

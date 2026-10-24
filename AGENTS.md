@@ -1,12 +1,16 @@
-# AGENTS.md — RN Lab Engineering Standards
+# AGENTS.md — RepForge Engineering Standards
 
 ## Project
 
-RN Lab is a React Native engineering laboratory and technical reference application.
+RepForge is an offline-first strength-training app for iOS and Android, built
+with bare React Native CLI, TypeScript and the New Architecture. It focuses on
+workout logging, progressive overload, personal records, analytics and goals.
 
-It contains interactive experiments covering JavaScript, React, React Native, New Architecture, JSI, TurboModules, Fabric, Codegen, Native Modules, Hardware APIs, Security, Networking, Storage, Performance, and Runtime internals.
-
-The application is intended to demonstrate senior-level React Native engineering practices.
+Use the feature-first structure in `src/features`, app composition in `src/app`,
+shared primitives in `src/shared`, and versioned SQLite persistence in
+`src/database`. SQLite owns persisted workouts; Zustand holds application preferences.
+The engineering standards below remain applicable; experiment examples illustrate
+separation of responsibilities and must not reintroduce RN Lab demo features.
 
 ---
 

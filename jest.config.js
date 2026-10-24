@@ -1,4 +1,21 @@
+const transform = { '^.+\\.[jt]sx?$': 'babel-jest' };
 module.exports = {
-  preset: '@react-native/jest-preset',
-  setupFiles: ['<rootDir>/jest.setup.js'],
+  watchman: false,
+  projects: [
+    {
+      displayName: 'domain',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/__tests__/domain/**/*.test.ts'],
+      transform,
+    },
+    {
+      displayName: 'ui',
+      preset: '@react-native/jest-preset',
+      testMatch: ['<rootDir>/__tests__/ui/**/*.test.tsx'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+      transformIgnorePatterns: [
+        'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-navigation|react-native-.*)/)',
+      ],
+    },
+  ],
 };

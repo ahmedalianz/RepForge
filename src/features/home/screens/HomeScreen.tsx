@@ -1,91 +1,67 @@
-import React from 'react';
-import {StyleSheet, Text} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {Screen} from '../../../components/Screen';
-import {SectionCard} from '../../../components/SectionCard';
-import {APP_CONFIG} from '../../../config/app';
-import type {RootStackParamList} from '../../../navigation/types';
-import {colors, spacing, typography} from '../../../theme';
-
-type HomeNav = NativeStackNavigationProp<RootStackParamList, 'Home'>;
-
-const SECTIONS: Array<{
-  title: string;
-  description: string;
-  route: keyof RootStackParamList;
-  meta: string;
-}> = [
-  {
-    title: 'Push Notifications',
-    description:
-      'Permissions, token lifecycle, foreground/background/killed delivery, and navigation from payload data.',
-    route: 'Notifications',
-    meta: 'Ready',
-  },
-  {
-    title: 'Deep Linking',
-    description:
-      'Custom schemes, App Links / Universal Links, cold-start races, auth gates, and a shared resolver.',
-    route: 'DeepLinking',
-    meta: 'Phase 3',
-  },
-  {
-    title: 'SSL Pinning',
-    description:
-      'Native TLS certificate / public-key pinning on Android and iOS — not a JS-only fake.',
-    route: 'SslPinning',
-    meta: 'Phase 4',
-  },
-  {
-    title: 'Debug / Diagnostics',
-    description:
-      'Runtime snapshot, navigation readiness, and structured event logs from every module.',
-    route: 'Diagnostics',
-    meta: 'Ready',
-  },
-];
-
+import { StyleSheet, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { spacing } from '../../../app/theme/tokens';
+import { useTheme } from '../../../app/theme/ThemeProvider';
+import { Screen } from '../../../shared/components/Screen';
+import { LoadingState } from '../../../shared/components/LoadingState';
+import { EmptyState } from '../../../shared/components/EmptyState';
+import { Button } from '../../../shared/components/Button';
+import { DashboardHeader } from '../components/DashboardHeader';
+import { WorkoutHero } from '../components/WorkoutHero';
+import { WeeklyActivity } from '../components/WeeklyActivity';
+import { RecordSummary } from '../components/RecordSummary';
+import { QuickStats } from '../components/QuickStats';
+import { useDashboard } from '../hooks/useDashboard';
 export function HomeScreen() {
-  const navigation = useNavigation<HomeNav>();
-
+  const navigation = useNavigation();
+  const { colors } = useTheme();
+  const { state, refresh } = useDashboard();
+  const streak = state.status === 'ready' ? state.dashboard.streak : undefined;
+  function startWorkout() {
+    if (state.status === 'ready' && state.activeSession) {
+      navigation.navigate('WorkoutDetails', {
+        sessionId: state.activeSession.id,
+      });
+    } else {
+      navigation.navigate('StartWorkout');
+    }
+  }
   return (
-    <Screen>
-      <Text style={styles.kicker}>{APP_CONFIG.displayName}</Text>
-      <Text style={styles.title}>Failure laboratory</Text>
-      <Text style={styles.subtitle}>
-        Isolated playgrounds for real production edge cases. Start with
-        Diagnostics, then implement each feature incrementally.
-      </Text>
-
-      {SECTIONS.map(section => (
-        <SectionCard
-          key={section.route}
-          title={section.title}
-          description={section.description}
-          meta={section.meta}
-          onPress={() => navigation.navigate(section.route)}
-        />
-      ))}
-    </Screen>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <DashboardHeader
+        streak={streak}
+        onProfile={() => navigation.navigate('Main', { screen: 'Profile' })}
+      />
+      {state.status === 'loading' ? (
+        <LoadingState message="Loading your training dashboard…" />
+      ) : (
+        <Screen contentStyle={styles.content}>
+          {/* TODO: need better ui for the error here */}
+          {state.status === 'error' ? (
+            <EmptyState title="Dashboard unavailable" message={state.message}>
+              <Button title="Retry" onPress={refresh} />
+            </EmptyState>
+          ) : (
+            <>
+              <WorkoutHero
+                greeting={state.dashboard.greeting}
+                hasActiveSession={state.activeSession !== null}
+                onStart={startWorkout}
+              />
+              <WeeklyActivity dashboard={state.dashboard} />
+              <RecordSummary
+                dashboard={state.dashboard}
+                onRecords={() => navigation.navigate('PersonalRecords')}
+              />
+              <QuickStats dashboard={state.dashboard} />
+            </>
+          )}
+        </Screen>
+      )}
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
-  kicker: {
-    ...typography.caption,
-    color: colors.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  title: {
-    ...typography.title,
-    color: colors.text.primary,
-    marginTop: spacing.xs,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.text.secondary,
-    marginBottom: spacing.sm,
-  },
+  root: { flex: 1 },
+  content: { paddingTop: spacing.sm, paddingBottom: spacing.xxxl },
 });

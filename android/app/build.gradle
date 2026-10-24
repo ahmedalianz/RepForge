@@ -77,9 +77,14 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.rnlab.app"
+    // Both platforms bundle the same checked-in font files.
+    sourceSets {
+        main.assets.srcDirs += ["../../assets"]
+    }
+
+    namespace "com.repforge.app"
     defaultConfig {
-        applicationId "com.rnlab.app"
+        applicationId "com.repforge.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -100,9 +105,8 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
 }
@@ -116,17 +120,4 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-}
-
-// Apply Google Services only when the developer has provided real Firebase config.
-// Without this file the app still builds; FCM remains UNAVAILABLE at runtime.
-def googleServicesJson = file("google-services.json")
-if (googleServicesJson.exists()) {
-    apply plugin: "com.google.gms.google-services"
-} else {
-    logger.warn(
-        "[rn-lab] android/app/google-services.json missing — " +
-        "copy from google-services.json.example after creating a Firebase Android app " +
-        "(package com.rnlab.app). FCM will be unavailable until then."
-    )
 }

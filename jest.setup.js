@@ -1,76 +1,25 @@
-jest.mock('react-native-bootsplash', () => ({
-  hide: jest.fn().mockResolvedValue(undefined),
-  isVisible: jest.fn(() => false),
-  useHideAnimation: jest.fn().mockReturnValue({
-    container: {},
-    logo: {source: 0},
-    brand: {source: 0},
-  }),
-}));
-
-jest.mock('@react-native-async-storage/async-storage', () => {
-  let store: Record<string, string> = {};
+/* eslint-env jest */
+jest.mock(
+  'react-native-safe-area-context',
+  () => require('react-native-safe-area-context/jest/mock').default,
+);
+jest.mock('react-native-gesture-handler', () => {
+  const { View } = require('react-native');
+  return { GestureHandlerRootView: View };
+});
+// Keep the real navigators and route behavior; replace only native platform views.
+jest.mock('react-native-screens', () => {
+  const screens = jest.requireActual('react-native-screens');
+  const { View } = require('react-native');
   return {
-    __esModule: true,
-    default: {
-      setItem: jest.fn(async (key: string, value: string) => {
-        store[key] = value;
-      }),
-      getItem: jest.fn(async (key: string) => store[key] ?? null),
-      removeItem: jest.fn(async (key: string) => {
-        delete store[key];
-      }),
-      clear: jest.fn(async () => {
-        store = {};
-      }),
-    },
+    ...screens,
+    Screen: View,
+    ScreenContainer: View,
+    ScreenStack: View,
+    ScreenStackItem: View,
+    ScreenStackHeaderConfig: View,
+    ScreenStackHeaderSubview: View,
+    FullWindowOverlay: View,
+    ScreenContentWrapper: View,
   };
 });
-
-jest.mock('@notifee/react-native', () => {
-  const AuthorizationStatus = {
-    NOT_DETERMINED: -1,
-    DENIED: 0,
-    AUTHORIZED: 1,
-    PROVISIONAL: 2,
-  };
-  const EventType = {
-    PRESS: 1,
-    DISMISSED: 0,
-    DELIVERED: 3,
-  };
-  return {
-    __esModule: true,
-    default: {
-      createChannel: jest.fn(async () => 'rnlab-default'),
-      getNotificationSettings: jest.fn(async () => ({
-        authorizationStatus: AuthorizationStatus.AUTHORIZED,
-      })),
-      requestPermission: jest.fn(async () => ({
-        authorizationStatus: AuthorizationStatus.AUTHORIZED,
-      })),
-      displayNotification: jest.fn(async () => 'id'),
-      onForegroundEvent: jest.fn(() => jest.fn()),
-      onBackgroundEvent: jest.fn(),
-      getInitialNotification: jest.fn(async () => null),
-    },
-    AuthorizationStatus,
-    EventType,
-  };
-});
-
-jest.mock('@react-native-firebase/app', () => ({
-  getApps: jest.fn(() => []),
-  getApp: jest.fn(),
-}));
-
-jest.mock('@react-native-firebase/messaging', () => ({
-  getMessaging: jest.fn(() => ({})),
-  getToken: jest.fn(async () => null),
-  getAPNSToken: jest.fn(async () => null),
-  onMessage: jest.fn(() => jest.fn()),
-  onNotificationOpenedApp: jest.fn(() => jest.fn()),
-  getInitialNotification: jest.fn(async () => null),
-  onTokenRefresh: jest.fn(() => jest.fn()),
-  setBackgroundMessageHandler: jest.fn(),
-}));
