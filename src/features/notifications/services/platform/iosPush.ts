@@ -1,5 +1,9 @@
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import type {NotificationPermissionStatus} from '../../types';
+import {
+  createFirebaseMessagingBindings,
+  type FirebaseMessagingBindings,
+} from '../firebaseMessaging';
 import type {PlatformPushAdapter} from './types';
 
 function mapNotifeeAuth(
@@ -19,26 +23,31 @@ function mapNotifeeAuth(
   }
 }
 
+function resolveFirebase(): FirebaseMessagingBindings {
+  // Always re-probe — never cache a "not configured" result from early boot.
+  return createFirebaseMessagingBindings();
+}
+
 /**
  * iOS push adapter.
  *
  * Permissions: Notifee → UNUserNotificationCenter.
- * Remote token: APNs device token — requires Push capability + registerForRemoteNotifications.
- * Without Firebase/APNs entitlement wiring, getRemoteToken returns null.
- * Simulation in NotificationService can mint a clearly labeled simulated-apns token.
+ * Remote token via Firebase: FCM registration token (NOT the raw APNs device token).
+ * APNs device token is exposed separately via getAPNSToken for learning.
  */
 export function createIosPushAdapter(): PlatformPushAdapter {
   return {
-    name: 'ios-notifee',
-    remoteTokenKind: 'apns',
-
-    async initialize(): Promise<void> {
-      // No Android-style channels on iOS.
+    get name() {
+      return resolveFirebase().status.messagingAvailable
+        ? 'ios-fcm+notifee'
+        : 'ios-notifee';
     },
+    remoteTokenKind: 'fcm',
+
+    async initialize(): Promise<void> {},
 
     async checkPermission(): Promise<NotificationPermissionStatus> {
       const settings = await notifee.getNotificationSettings();
-      // iOS has no separate "blocked" enum in Notifee; repeated deny is DENIED.
       return mapNotifeeAuth(settings.authorizationStatus);
     },
 
@@ -53,9 +62,12 @@ export function createIosPushAdapter(): PlatformPushAdapter {
     },
 
     async getRemoteToken() {
-      // Real APNs device token requires native registerForRemoteNotifications
-      // and usually a push provider (often Firebase as the APNs broker).
-      return null;
+      return resolveFirebase().getToken();
+    },
+
+    getFirebaseMessaging() {
+      const firebase = resolveFirebase();
+      return firebase.status.messagingAvailable ? firebase : null;
     },
 
     cleanup(): void {},

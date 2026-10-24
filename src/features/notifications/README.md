@@ -1,214 +1,250 @@
-# Push Notifications Playground (Phase 2)
+# Push Notifications Playground
 
-Learning laboratory for the **complete notification lifecycle**, including failure modes.
+Learning laboratory for the complete notification lifecycle — architecture (Phase 2)
+and **real remote FCM transport** (Phase 2.5).
 
-This module is intentionally honest about native complexity. Remote **FCM / APNs** transport is **not wired yet** (no Firebase config in the repo). Permissions, channels, local display, validation, dedupe, pending-queue, and logging are real. Remote tokens use an explicit **simulated / not-configured** path until Firebase is added.
+Remote Firebase credentials are **not invented**. Without
+`google-services.json` / `GoogleService-Info.plist`, FCM is **NOT CONFIGURED**
+and simulations still exercise the same pipelines.
 
 ---
 
 ## Architecture
 
 ```text
-UI (NotificationsPlaygroundScreen)
+Remote Provider (Firebase Console / your server)
   ↓
-hooks/useNotificationPlayground
+FCM / APNs
   ↓
-NotificationService  (singleton, idempotent initialize)
+Native OS
   ↓
-Platform adapter (android-notifee | ios-notifee)
+Firebase Messaging (@react-native-firebase/messaging)
   ↓
-Notifee / PermissionsAndroid / UNUserNotificationCenter
+Platform adapter
   ↓
-[Future] FCM / APNs
+NotificationService
   ↓
-Operating system
+Validation → Deduplication → Pending (if nav not ready)
+  ↓
+NAVIGATION_REQUEST (no real navigation yet)
 ```
+
+**Notifee role:** Android channels, permission helpers, **foreground local display**
+of FCM messages, and press events for notifications we displayed ourselves.
+
+**Firebase role:** FCM registration token, token refresh, remote message delivery,
+background handler, notification-open / initial notification from remote pushes.
 
 Cold-start open path:
 
 ```text
-initialNotification
+User taps remote notification
+  → OS launches app
+  → Firebase getInitialNotification / Notifee (only if we displayed it)
   → NotificationService.handleInitial
-  → pending queue (if navigation not ready)
-  → NavigationContainer.onReady
-  → NotificationService.onNavigationReady
-  → process (validate → dedupe → log)
-  → "Navigation request received" (Phase 2: no real navigation)
+  → pending queue if navigation not ready
+  → onNavigationReady → NAVIGATION_REQUEST
 ```
 
 ---
 
-## Why these libraries
+# Real Remote Push Notifications (Phase 2.5)
 
-| Library | Role | Why |
-|---------|------|-----|
-| `@notifee/react-native` | Permissions, Android channels, local display, initial/press events | Works without Firebase; production-grade notification UX APIs |
-| `@react-native-async-storage/async-storage` | Persist token records | Required to study token lifecycle / stale tokens |
+## Dependencies
 
-### Why Firebase Messaging was **not** installed yet
+| Package | Version | Why |
+|---------|---------|-----|
+| `@react-native-firebase/app` | 26.4.0 | Firebase core (New Architecture / modular API) |
+| `@react-native-firebase/messaging` | 26.4.0 | FCM token + remote messages |
+| `@notifee/react-native` | (Phase 2) | Presentation / channels / permissions |
+| `@react-native-async-storage/async-storage` | (Phase 2) | Token persistence |
 
-1. No `google-services.json` / `GoogleService-Info.plist` in the repo
-2. Adding `@react-native-firebase/*` without those files **breaks native builds**
-3. Phase 2 still teaches the service architecture via simulations that share the same pipeline
+RN was **not** upgraded. Project already has New Architecture enabled → RNFB v26 is appropriate.
 
-When you add Firebase later: implement `getRemoteToken()` in the platform adapters and keep simulations for failure labs.
+## Firebase configuration required (YOU must provide)
 
----
+### Android — package `com.rnlab.app`
 
-## APNs token vs FCM registration token
+1. Create a Firebase project + Android app with package name **`com.rnlab.app`**
+2. Download **`google-services.json`**
+3. Place it at: **`android/app/google-services.json`**
+4. Template (not valid credentials): `android/app/google-services.json.example`
+5. Gradle: Google Services plugin applies **only if the real file exists** (build stays possible without it)
 
-| | APNs device token | FCM registration token |
-|--|-------------------|-------------------------|
-| Platform | iOS (and related Apple platforms) | Android primarily; also used by Firebase on iOS as an **abstraction** |
-| Issued by | Apple Push Notification service | Firebase Cloud Messaging |
-| Format | Opaque hex string from Apple | Firebase registration id string |
-| Used by server to | Talk to APNs directly | Talk to FCM (which may talk to APNs on iOS) |
+### iOS — bundle `com.rnlab.app`
 
-**Do not treat them as the same string.**  
-On iOS with Firebase, your server usually stores the **FCM registration token**, while Firebase holds the mapping to the underlying APNs device token. Rotating one does not mean the other is identical.
+1. Create Firebase iOS app with bundle id **`com.rnlab.app`**
+2. Download **`GoogleService-Info.plist`**
+3. Place at: **`ios/RNLab/GoogleService-Info.plist`**
+4. **Add the plist to the Xcode target** (Copy Bundle Resources)
+5. Template: `ios/RNLab/GoogleService-Info.plist.example`
+6. Already prepared in repo:
+   - `UIBackgroundModes` → `remote-notification`
+   - `RNLab.entitlements` with `aps-environment = development`
+7. **Apple Developer (manual — NOT VERIFIED in this environment):**
+   - Enable **Push Notifications** capability for the App ID
+   - Create APNs key (.p8) or certificates
+   - Upload APNs key to Firebase Console → Project settings → Cloud Messaging
+   - Use a **real device** for reliable remote push (simulator support is limited)
 
-In this lab:
+### Security
 
-- Android adapter `remoteTokenKind = 'fcm'`
-- iOS adapter `remoteTokenKind = 'apns'`
-- Simulations mint `simulated-fcm` / `simulated-apns` and label them clearly in the UI and logs
+| Client (may be in app) | Server (NEVER in app repo) |
+|------------------------|----------------------------|
+| `google-services.json` / `GoogleService-Info.plist` (public-ish client config) | FCM server keys / service account JSON |
+| | APNs `.p8` private key |
+| | Any backend auth secrets |
 
----
-
-## Concept guide (normal → failure → reproduce → debug → fix)
-
-### 1. Permission
-
-**Normal:** User grants → `AUTHORIZED` (iOS may be `PROVISIONAL`).  
-**Failure:** Deny / never ask again → `DENIED` / `BLOCKED`.  
-**Reproduce:** Request → deny; on Android 13+ deny twice for blocked-like behavior.  
-**Debug:** Event log `PERMISSION_REQUESTED` / `PERMISSION_CHANGED`; OS Settings.  
-**Fix:** Detect blocked → “Open Settings”; never assume request() ⇒ authorized.
-
-### 2. Android version differences
-
-- **< 33:** Install-time notification permission (still need channels on 8+).
-- **33+:** Runtime `POST_NOTIFICATIONS` (declared in `AndroidManifest.xml`).
-- **Channels (8+):** Without a channel, notifications may be silently dropped.
-
-### 3. Foreground
-
-**Normal:** App active → JS handler runs; OS may **not** show a system banner unless you display locally (Notifee).  
-**Failure:** Assuming background UI appears in foreground.  
-**Reproduce:** Simulate Foreground Notification.  
-**Debug:** `NOTIFICATION_RECEIVED` with `appState=FOREGROUND`.  
-**Fix:** Explicit foreground presentation policy.
-
-### 4. Background
-
-**Normal:** OS displays notification; tap → process resume → opened handler.  
-**JS role:** Limited while suspended; Notifee background handler + open events matter.  
-**Reproduce:** Display local notif → Home → tap.  
-**Debug:** `NOTIFICATION_OPENED`, compare app state transitions.  
-**Fix:** Register background handler early (`index.js`).
-
-### 5. Terminated / cold start
-
-**Normal:** Tap launches app → `getInitialNotification` / initial open → pending until nav ready.  
-**Failure:** Navigate before `NavigationContainer` ready → lost route / crash.  
-**Reproduce:** Simulate Initial Notification (queues then flushes).  
-**Debug:** `PENDING_QUEUED` then `PENDING_FLUSHED`.  
-**Fix:** Pending queue + `onNavigationReady()`.
-
-### 6. Duplicate events
-
-**Why:** Same tap observed as initial + opened, or double listener registration.  
-**Detect:** Dedupe key `eventFamily:notificationId` with TTL.  
-**Reproduce:** Simulate Duplicate Notification.  
-**Missing dedupe:** Double navigation, double analytics, race bugs.  
-**Fix:** Idempotent service + dedupe store + single initialize.
-
-### 7. Token refresh / stale tokens
-
-**Normal:** Token rotates → persist → upload to backend.  
-**Failure:** Server keeps stale token → silent push failure.  
-**Reproduce:** Simulate Token Refresh twice; compare stored token.  
-**Fix:** On refresh, replace storage and sync backend; delete old token server-side.
-
-### 8. Invalid payloads
-
-**Normal:** Validate before side effects.  
-**Failure:** `data.type` missing → crash in router.  
-**Reproduce:** Simulate Invalid Payload.  
-**Debug:** `INVALID_PAYLOAD` with reason.  
-**Fix:** `validateNotificationPayload` never throws.
-
-### 9. Listener cleanup
-
-**Failure:** `initialize()` on every render → duplicate handlers.  
-**Fix:** Singleton + initializing promise + unsubscribe foreground listener on cleanup.
+Real credential files are **gitignored**.
 
 ---
 
-## Where work happens (layer map)
+## Token lifecycle
 
 ```text
-Push server
-  → FCM (Android / Firebase-iOS) or APNs (direct iOS)
-  → OS notification center / system tray
-  → Native Notifee / Firebase Messaging SDK
-  → React Native bridge / JSI
-  → JavaScript NotificationService
-  → UI log / (future) navigation resolver
+App start → Firebase init (if configured)
+  → permission check/request
+  → getToken() → FCM registration token
+  → persist locally
+  → onTokenRefresh → persist + registerTokenWithBackend() stub
 ```
 
-| State | Who shows UI | Who wakes JS |
-|-------|--------------|--------------|
-| Foreground | Often your code (Notifee display) | Yes, immediately |
-| Background | OS | On tap / limited background handlers |
-| Terminated | OS | On tap after JS boot |
+| Concept | Status |
+|---------|--------|
+| FCM registration token via `getToken` | **Implemented** — requires credentials to be **VERIFIED** |
+| Token persist / change detect | **Implemented** |
+| `onTokenRefresh` | **Implemented** |
+| `registerTokenWithBackend` | **Stub only** (logs `TOKEN_BACKEND_REGISTER_STUB`) |
+| APNs device token via `getAPNSToken` | **Implemented (iOS)** — shown separately in UI |
+
+**WHY backend registration matters:** without upserting the FCM token on your server, you cannot target the device; stale tokens cause silent delivery failures.
 
 ---
 
-## Test matrix
-
-| Scenario | Android | iOS | Expected Result |
-| -------- | ------- | --- | --------------- |
-| Permission allowed | Manual | Manual | Status `AUTHORIZED`; log `PERMISSION_REQUESTED` |
-| Permission denied | Manual | Manual | `DENIED` / `BLOCKED`; no crash |
-| App foreground | Sim + Manual | Sim + Manual | `NOTIFICATION_RECEIVED`, appState `FOREGROUND` |
-| App background | Manual | Manual | OS shows; tap → `NOTIFICATION_OPENED` |
-| App terminated | Manual | Manual | Cold start → pending/flush → `INITIAL_NOTIFICATION` |
-| Notification tapped | Sim + Manual | Sim + Manual | `NOTIFICATION_OPENED` + optional `NAVIGATION_REQUEST` |
-| Token refresh | Sim | Sim | New stored token; `TOKEN_REFRESHED` |
-| Invalid payload | Sim | Sim | `INVALID_PAYLOAD`, no crash |
-| Duplicate event | Sim | Sim | First `NOTIFICATION_RECEIVED`, second `DUPLICATE_NOTIFICATION` |
-| Notification before navigation ready | Sim | Sim | `PENDING_QUEUED` then `PENDING_FLUSHED` |
-| Real FCM/APNs remote token | Unverified (Firebase not configured) | Unverified | `TOKEN_ERROR` until wired |
-
-Cells marked **Manual** / **Unverified** must be confirmed on device/simulator after `pod install` / Gradle sync.
-
----
-
-## Manual test checklist
-
-1. `cd ios && bundle exec pod install` (Notifee native)
-2. `npm run ios` / `npm run android`
-3. Open **Push Notifications**
-4. Check / Request permission; deny once; open settings
-5. Get Token → expect honest “not configured” error
-6. Simulate Token Refresh → token appears as simulated FCM/APNs
-7. Run each simulation; confirm Event Log entries
-8. Background the app, open Diagnostics, confirm push diagnostics updated
-
----
-
-## Files
+## Foreground behavior
 
 ```text
-src/features/notifications/
-  components/          Permission, Token, AppState, Simulation, EventLog
-  hooks/               useNotificationPlayground
-  services/            NotificationService, token/dedupe/pending, platform/*
-  types/               payloads, events, permission, token kinds
-  utils/               validatePayload, appState, openSettings
-  config/              channels, storage keys
-  screens/             NotificationsPlaygroundScreen
-  notificationLogger.ts
-  README.md
+FCM message → onMessage → FOREGROUND_REMOTE_MESSAGE
+  → if notification payload: Notifee.displayNotification (explicit)
+  → NOTIFICATION_RECEIVED
+  → (tap) Notifee PRESS → NOTIFICATION_OPENED (deduped)
+```
+
+| Claim | Status |
+|-------|--------|
+| Handler wired | **Implemented** |
+| End-to-end with real FCM | **NOT VERIFIED** (no credentials in CI/sandbox) |
+| OS auto-shows banner in foreground | **Do not assume** — we display via Notifee deliberately |
+
+---
+
+## Background / terminated
+
+| Path | What runs |
+|------|-----------|
+| Notification payload, app background | OS usually displays; JS may get `setBackgroundMessageHandler` depending on platform/payload — **NOT VERIFIED** here |
+| Data-only, high priority | More likely to wake JS background handler — **NOT VERIFIED** |
+| User tap from background | `onNotificationOpenedApp` → **Implemented** |
+| User tap from killed | `getInitialNotification` → pending queue → **Implemented** |
+
+**WHAT if JS is not running?** OS can still show a notification payload. Data-only may be dropped or delayed until a process wakes.
+
+---
+
+## Payload matrix (document expectations — mark verification honestly)
+
+| Payload | Android FG | Android BG | Android killed | iOS FG | iOS BG | iOS killed |
+|---------|------------|------------|----------------|--------|--------|------------|
+| notification | JS `onMessage` + Notifee display (**impl**) | OS display (**expected**, NOT VERIFIED) | OS display (**expected**, NOT VERIFIED) | same | OS / APNs (**expected**, NOT VERIFIED) | same |
+| notification+data | data available in `onMessage` (**impl**) | data often available on tap (**expected**, NOT VERIFIED) | via initial notification (**impl** path) | same | same | same |
+| data-only | `onMessage` (**impl**) | needs high priority / content-available (**expected**, NOT VERIFIED) | limited (**expected**, NOT VERIFIED) | often requires content-available (**expected**, NOT VERIFIED) | same | same |
+
+---
+
+## Notification identity & duplicates
+
+```text
+dedupeKey = providerMessageId (FCM messageId)
+         ?? notificationId
+         ?? fallbackHash(title|body|type|id|route)
+```
+
+Dedupe families:
+
+- `received` — delivery events
+- `open` — **both** `opened` and `initial` (fixes Phase 2 double NAVIGATION_REQUEST on cold start)
+
+Simulate Duplicate runs received → opened → initial → fcm received → notifee opened and expects later opens to log `DUPLICATE_NOTIFICATION`.
+
+---
+
+## Testing real pushes (after you add credentials)
+
+1. Copy real Firebase config files (see above)
+2. `cd ios && bundle exec pod install`
+3. Rebuild native apps (`npm run android` / `npm run ios`)
+4. Grant notification permission
+5. Tap **Get Token** — copy FCM registration token
+6. Firebase Console → Messaging → create test message **or** use HTTP v1 with a **server** service account (not in this app)
+
+Suggested test cases:
+
+1. Foreground — app open, send notification+data
+2. Background — home screen, send, then tap
+3. Terminated — force quit, send, tap
+4. Data-only — observe whether JS wakes (document result)
+5. Invalid data — missing `type` → `INVALID_PAYLOAD`
+6. Duplicate — open via FCM and ensure single `NAVIGATION_REQUEST`
+
+Firebase Console limitations: data-only / advanced options are limited; use Admin SDK / HTTP v1 from a **server** for full control.
+
+---
+
+## Failure lab
+
+| Scenario | How |
+|----------|-----|
+| Firebase not configured | Remove/omit credential files → Diagnostics shows NOT CONFIGURED |
+| Permission denied | Deny OS prompt |
+| Token unavailable | Get Token without credentials |
+| Token refresh | Real `onTokenRefresh` or Simulate Token Refresh |
+| Invalid payload | Simulate Invalid Payload |
+| Duplicate | Simulate Duplicate Notification |
+| Nav not ready | Simulate Initial Notification |
+| Background handler | Real FCM data message (NOT VERIFIED until credentials) |
+
+---
+
+## Diagnostics fields
+
+Firebase, FCM availability, permission, token status/source/preview, last remote message, last tap, last error, last event.
+
+---
+
+## Manual Apple / Android checklist (developer)
+
+### Android
+- [ ] `google-services.json` in `android/app/`
+- [ ] Rebuild after adding file (plugin applies automatically)
+- [ ] `POST_NOTIFICATIONS` granted on API 33+
+
+### iOS
+- [ ] `GoogleService-Info.plist` in target
+- [ ] Push capability + APNs key in Firebase
+- [ ] Physical device recommended
+- [ ] `pod install` after adding RNFB
+
+---
+
+## Files (Phase 2.5 additions)
+
+```text
+services/firebaseMessaging.ts
+services/firebaseStatus.ts
+services/tokenBackend.ts
+utils/notificationIdentity.ts
+utils/remoteMessageMapper.ts
+android/app/google-services.json.example
+ios/RNLab/GoogleService-Info.plist.example
+ios/RNLab/RNLab.entitlements
 ```

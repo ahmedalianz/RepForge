@@ -54,7 +54,12 @@ export function validateNotificationPayload(
   const id = asString(data.id) ?? asString(notification.id);
 
   if (!type) {
-    return {valid: false, reason: 'Missing notification type', data};
+    return {
+      valid: false,
+      reason:
+        'Missing notification type — Firebase Console title/body alone is not enough. Add Custom data keys: type (e.g. order), id, and optionally route / deepLink.',
+      data,
+    };
   }
 
   if (!id) {

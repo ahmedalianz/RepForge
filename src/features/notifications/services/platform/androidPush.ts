@@ -5,6 +5,10 @@ import {
   NOTIFICATION_CHANNEL_NAME,
 } from '../../config/constants';
 import type {NotificationPermissionStatus} from '../../types';
+import {
+  createFirebaseMessagingBindings,
+  type FirebaseMessagingBindings,
+} from '../firebaseMessaging';
 import type {PlatformPushAdapter} from './types';
 
 function mapNotifeeAuth(
@@ -24,16 +28,23 @@ function mapNotifeeAuth(
   }
 }
 
+function resolveFirebase(): FirebaseMessagingBindings {
+  return createFirebaseMessagingBindings();
+}
+
 /**
  * Android push adapter.
  *
  * Permissions: Notifee + POST_NOTIFICATIONS (API 33+).
- * Remote token: FCM registration token — NOT available until Firebase is wired.
- * This adapter never invents an FCM token; simulation lives in NotificationService.
+ * Remote token: FCM registration token via React Native Firebase when configured.
  */
 export function createAndroidPushAdapter(): PlatformPushAdapter {
   return {
-    name: 'android-notifee',
+    get name() {
+      return resolveFirebase().status.messagingAvailable
+        ? 'android-fcm+notifee'
+        : 'android-notifee';
+    },
     remoteTokenKind: 'fcm',
 
     async initialize(): Promise<void> {
@@ -58,7 +69,6 @@ export function createAndroidPushAdapter(): PlatformPushAdapter {
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
         if (!result) {
-          // Could be denied or never asked — Notifee settings refine this.
           const settings = await notifee.getNotificationSettings();
           if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
             return 'BLOCKED';
@@ -94,12 +104,14 @@ export function createAndroidPushAdapter(): PlatformPushAdapter {
     },
 
     async getRemoteToken() {
-      // Real FCM requires @react-native-firebase/messaging + google-services.json.
-      return null;
+      return resolveFirebase().getToken();
     },
 
-    cleanup(): void {
-      // No native listeners registered at the adapter layer yet.
+    getFirebaseMessaging() {
+      const firebase = resolveFirebase();
+      return firebase.status.messagingAvailable ? firebase : null;
     },
+
+    cleanup(): void {},
   };
 }

@@ -1,8 +1,13 @@
 import type {KnownNotificationType} from '../config/constants';
+import type {NotificationIdentity} from '../utils/notificationIdentity';
 
 /**
  * Distinguishes remote token kinds.
  * APNs device token ≠ FCM registration token.
+ *
+ * With React Native Firebase on both platforms, messaging.getToken() returns an
+ * FCM registration token. On iOS, getAPNSToken() exposes the underlying APNs
+ * device token separately for learning — never treat them as interchangeable.
  */
 export type PushTokenKind = 'apns' | 'fcm' | 'simulated-apns' | 'simulated-fcm';
 
@@ -11,6 +16,8 @@ export type PushTokenRecord = {
   kind: PushTokenKind;
   updatedAt: string;
   source: 'native' | 'simulated' | 'storage';
+  /** iOS only — underlying APNs device token when Firebase exposes it. */
+  apnsDeviceToken?: string;
 };
 
 export type NotificationPermissionStatus =
@@ -35,6 +42,7 @@ export type NotificationEventType =
   | 'TOKEN_REFRESHED'
   | 'TOKEN_CLEARED'
   | 'TOKEN_ERROR'
+  | 'TOKEN_BACKEND_REGISTER_STUB'
   | 'NOTIFICATION_RECEIVED'
   | 'NOTIFICATION_OPENED'
   | 'INITIAL_NOTIFICATION'
@@ -45,6 +53,9 @@ export type NotificationEventType =
   | 'PENDING_FLUSHED'
   | 'NOTIFICATION_ERROR'
   | 'SERVICE_INITIALIZED'
+  | 'FIREBASE_STATUS'
+  | 'FOREGROUND_REMOTE_MESSAGE'
+  | 'BACKGROUND_REMOTE_MESSAGE'
   | 'SIMULATION';
 
 export type NotificationEventSource =
@@ -61,6 +72,9 @@ export type NotificationDataPayload = {
   id?: string;
   route?: string;
   deepLink?: string;
+  providerMessageId?: string;
+  __rnlabProviderMessageId?: string;
+  __rnlabDisplayedBy?: string;
   [key: string]: string | undefined;
 };
 
@@ -78,6 +92,7 @@ export type AppNotification = {
   title?: string;
   body?: string;
   data: NotificationDataPayload;
+  identity?: NotificationIdentity;
   raw?: unknown;
 };
 

@@ -75,12 +75,39 @@ export function DiagnosticsScreen() {
         />
       </SectionCard>
 
-      <SectionCard title="Push Notifications" meta="stub">
+      <SectionCard
+        title="Push Notifications"
+        meta={snapshot.push.fcmStatus ?? 'stub'}>
+        <StatusRow
+          label="Firebase"
+          value={snapshot.push.firebaseConfigured ?? 'NOT CONFIGURED'}
+        />
+        <StatusRow label="FCM" value={snapshot.push.fcmStatus ?? 'UNAVAILABLE'} />
         <StatusRow
           label="Permission"
           value={snapshot.push.permissionStatus}
         />
-        <StatusRow label="Token" value={snapshot.push.tokenStatus} />
+        <StatusRow label="Token status" value={snapshot.push.tokenStatus} />
+        <StatusRow
+          label="Token source"
+          value={snapshot.push.tokenSource ?? 'none'}
+        />
+        <StatusRow
+          label="FCM token"
+          value={snapshot.push.fcmTokenPreview ?? 'none'}
+        />
+        <StatusRow
+          label="Last remote message"
+          value={snapshot.push.lastRemoteMessage ?? 'none'}
+        />
+        <StatusRow
+          label="Last tap"
+          value={snapshot.push.lastTap ?? 'none'}
+        />
+        <StatusRow
+          label="Last error"
+          value={snapshot.push.lastError ?? 'none'}
+        />
         <StatusRow
           label="Last event"
           value={

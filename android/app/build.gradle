@@ -117,3 +117,16 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// Apply Google Services only when the developer has provided real Firebase config.
+// Without this file the app still builds; FCM remains UNAVAILABLE at runtime.
+def googleServicesJson = file("google-services.json")
+if (googleServicesJson.exists()) {
+    apply plugin: "com.google.gms.google-services"
+} else {
+    logger.warn(
+        "[rn-lab] android/app/google-services.json missing — " +
+        "copy from google-services.json.example after creating a Firebase Android app " +
+        "(package com.rnlab.app). FCM will be unavailable until then."
+    )
+}

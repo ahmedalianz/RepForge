@@ -12,12 +12,14 @@ import {useNotificationPlayground} from '../hooks/useNotificationPlayground';
 export function NotificationsPlaygroundScreen() {
   const playground = useNotificationPlayground();
   const {snapshot} = playground;
-console.log(snapshot)
+
   return (
     <Screen>
       <Text style={styles.lead}>
-        Push notification failure laboratory. Remote FCM/APNs transport is not
-        configured yet — use simulations to exercise the same service pipeline.
+        Real remote push lab (Phase 2.5). When Firebase credentials are present,
+        FCM drives remote delivery; Notifee handles channels and foreground
+        presentation. Without credentials the service stays honest and
+        simulations still exercise the same pipelines.
       </Text>
 
       <PermissionPanel
@@ -32,6 +34,10 @@ console.log(snapshot)
         token={snapshot.token}
         tokenStatus={snapshot.tokenStatus}
         remoteTransport={snapshot.remoteTransport}
+        firebaseConfigured={snapshot.firebaseConfigured}
+        fcmAvailable={snapshot.fcmAvailable}
+        apnsDeviceToken={snapshot.apnsDeviceToken}
+        lastError={snapshot.lastError}
         busy={playground.busy}
         onGet={playground.getToken}
         onRefresh={playground.refreshToken}

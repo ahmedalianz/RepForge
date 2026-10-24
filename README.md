@@ -25,7 +25,8 @@ This is a **failure laboratory**, not a polished product app.
 | Phase | Scope | Status |
 |-------|-------|--------|
 | 1 | Clean shell, navigation, Home, Diagnostics, empty feature modules | Done |
-| 2 | Push Notifications | **Current** |
+| 2 | Push Notifications architecture + simulations | Done |
+| 2.5 | Real FCM remote push (credentials required to verify) | **Current** |
 | 3 | Deep Linking | Pending |
 | 4 | SSL Pinning | Pending |
 

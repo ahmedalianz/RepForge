@@ -58,3 +58,19 @@ jest.mock('@notifee/react-native', () => {
     EventType,
   };
 });
+
+jest.mock('@react-native-firebase/app', () => ({
+  getApps: jest.fn(() => []),
+  getApp: jest.fn(),
+}));
+
+jest.mock('@react-native-firebase/messaging', () => ({
+  getMessaging: jest.fn(() => ({})),
+  getToken: jest.fn(async () => null),
+  getAPNSToken: jest.fn(async () => null),
+  onMessage: jest.fn(() => jest.fn()),
+  onNotificationOpenedApp: jest.fn(() => jest.fn()),
+  getInitialNotification: jest.fn(async () => null),
+  onTokenRefresh: jest.fn(() => jest.fn()),
+  setBackgroundMessageHandler: jest.fn(),
+}));

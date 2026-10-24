@@ -7,6 +7,13 @@ export type PushDiagnostics = {
   permissionStatus: 'unknown' | 'not-configured' | string;
   tokenStatus: 'unknown' | 'not-configured' | 'available' | 'unavailable' | string;
   lastEventSummary?: string;
+  firebaseConfigured?: 'CONFIGURED' | 'NOT CONFIGURED' | string;
+  fcmStatus?: 'AVAILABLE' | 'UNAVAILABLE' | string;
+  tokenSource?: string;
+  fcmTokenPreview?: string;
+  lastRemoteMessage?: string;
+  lastTap?: string;
+  lastError?: string;
 };
 
 export type DeepLinkDiagnostics = {
@@ -36,6 +43,8 @@ let snapshot: DiagnosticsSnapshot = {
   push: {
     permissionStatus: 'not-configured',
     tokenStatus: 'not-configured',
+    firebaseConfigured: 'NOT CONFIGURED',
+    fcmStatus: 'UNAVAILABLE',
   },
   deepLinking: {
     queueSize: 0,

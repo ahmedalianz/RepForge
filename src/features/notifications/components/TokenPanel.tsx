@@ -10,6 +10,10 @@ type Props = {
   token: PushTokenRecord | null;
   tokenStatus: string;
   remoteTransport: string;
+  firebaseConfigured: boolean;
+  fcmAvailable: boolean;
+  apnsDeviceToken?: string;
+  lastError?: string;
   busy?: boolean;
   onGet: () => void;
   onRefresh: () => void;
@@ -38,6 +42,10 @@ export function TokenPanel({
   token,
   tokenStatus,
   remoteTransport,
+  firebaseConfigured,
+  fcmAvailable,
+  apnsDeviceToken,
+  lastError,
   busy,
   onGet,
   onRefresh,
@@ -45,20 +53,34 @@ export function TokenPanel({
 }: Props) {
   return (
     <SectionCard title="Push Token" meta={tokenStatus}>
+      <StatusRow label="Provider" value="FCM" />
+      <StatusRow
+        label="Firebase"
+        value={firebaseConfigured ? 'CONFIGURED' : 'NOT CONFIGURED'}
+      />
+      <StatusRow
+        label="FCM"
+        value={fcmAvailable ? 'AVAILABLE' : 'UNAVAILABLE'}
+      />
       <StatusRow label="Transport" value={remoteTransport} />
-      <StatusRow label="Kind" value={describeKind(token)} />
+      <StatusRow label="Token kind" value={describeKind(token)} />
       <StatusRow label="Token status" value={tokenStatus} />
+      <StatusRow label="Source" value={token?.source ?? '—'} />
+      <StatusRow label="Current token" value={token?.token ?? 'none'} />
+      <StatusRow label="Last updated" value={token?.updatedAt ?? '—'} />
       <StatusRow
-        label="Current token"
-        value={token?.token ?? 'none'}
+        label="APNs device token"
+        value={apnsDeviceToken ?? token?.apnsDeviceToken ?? 'n/a (iOS only)'}
       />
-      <StatusRow
-        label="Last updated"
-        value={token?.updatedAt ?? '—'}
-      />
+      {lastError ? (
+        <StatusRow label="Last error" value={lastError} />
+      ) : null}
       <Text style={{...typography.caption, color: colors.text.muted}}>
-        APNs device token ≠ FCM registration token. On Android, FCM usually wraps
-        APNs only on iOS via Firebase. This lab does not treat them as the same.
+        With Firebase, both Android and iOS apps primarily use the FCM
+        registration token. On iOS, APNs device token is a separate underlying
+        value — never mix them up or send the wrong one to your backend.
+        Request Permission before Get Token. Simulator often cannot mint a real
+        APNs/FCM token — use a physical device if Get Token keeps failing.
       </Text>
       <ButtonRow>
         <LabButton label="Get Token" onPress={onGet} disabled={busy} />
