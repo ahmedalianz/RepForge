@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../localization/i18n';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../app/theme/ThemeProvider';
@@ -29,7 +31,7 @@ function ElapsedClock({
         compact && styles.compactClock,
       ]}
       accessible
-      accessibilityLabel={`Workout duration ${label}`}
+      accessibilityLabel={t('workouts:duration', { time: label })}
     >
       {!compact ? (
         <Icon name="timer" color={colors.subtle} size={sizes.smallIcon} />
@@ -58,11 +60,15 @@ export function WorkoutHeader({
   onMinimize: () => void;
   onFinish: () => void;
 }) {
+  useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const compact = width < 390;
-  const subtitle = session.status === 'active' ? title : session.status;
+  const subtitle =
+    session.status === 'active'
+      ? title
+      : t(`workouts:status_${session.status}`);
   return (
     <View
       style={{ backgroundColor: colors.background, paddingTop: insets.top }}
@@ -70,7 +76,7 @@ export function WorkoutHeader({
       <View style={[styles.header, compact && styles.compactHeader]}>
         <IconButton
           icon="chevronDown"
-          label="Minimize workout"
+          label={t('workouts:minimize')}
           onPress={onMinimize}
         />
         <View style={styles.brand}>
@@ -88,7 +94,7 @@ export function WorkoutHeader({
         <ElapsedClock session={session} compact={compact} />
         {session.status === 'active' ? (
           <Button
-            title="Finish"
+            title={t('workouts:finish')}
             leadingIcon={compact ? undefined : 'checkCircle'}
             size="compact"
             disabled={!canFinish}
@@ -119,7 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   compactClock: { paddingHorizontal: spacing.xs },
-  numeric: { fontVariant: ['tabular-nums'] },
+  numeric: { writingDirection: 'ltr', fontVariant: ['tabular-nums'] },
   uppercase: { textTransform: 'uppercase' },
   sentenceCase: { textTransform: 'none' },
 });

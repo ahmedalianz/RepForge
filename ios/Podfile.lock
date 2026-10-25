@@ -1861,6 +1861,29 @@ PODS:
     - ReactNativeDependencies
     - RNWorklets (>= 0.8.0)
     - Yoga
+  - RNLocalize (3.7.2):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNNitroSQLite (10.2.0):
     - hermes-engine
     - NitroModules
@@ -2252,6 +2275,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNLocalize (from `../node_modules/react-native-localize`)
   - RNNitroSQLite (from `../node_modules/react-native-nitro-sqlite`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2436,6 +2460,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNLocalize:
+    :path: "../node_modules/react-native-localize"
   RNNitroSQLite:
     :path: "../node_modules/react-native-nitro-sqlite"
   RNReanimated:
@@ -2539,6 +2565,7 @@ SPEC CHECKSUMS:
   ReactCommon: c6895b36d81986f89a7e40a00b4b72ca70e82710
   ReactNativeDependencies: d3b7423ba1e52525e42085c8470109abde583d2e
   RNGestureHandler: 31b42d92cb205b684973a3ee363a88cbdeb3cc48
+  RNLocalize: 5189c34897ff63b8014cb0f706ea745554d2f9d6
   RNNitroSQLite: e402bede3abf063fdcae98f8c3cf27cee009c18f
   RNReanimated: 02d6b0d54a0d4e9e02659f19be971935a371d12d
   RNScreens: a56a0eca6efd7175da435cdef59aa45bfeb244ed

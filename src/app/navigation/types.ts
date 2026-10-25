@@ -8,7 +8,6 @@ export type TabParamList = {
 };
 export type RootStackParamList = {
   Main: NavigatorScreenParams<TabParamList> | undefined;
-  StartWorkout: undefined;
   WorkoutDetails: { sessionId: string };
   ExerciseDetails: { exerciseId: string } | undefined;
   PersonalRecords: undefined;

@@ -1,6 +1,9 @@
+import { useTranslation } from 'react-i18next';
+import { getLanguage } from '../../localization/i18n';
 import Svg, { Path } from 'react-native-svg';
 import { sizes } from '../../app/theme/tokens';
 const paths = {
+  arrowLeft: 'M19 12H5m6-6-6 6 6 6',
   chevronDown: 'm6 9 6 6 6-6',
   more: 'M12 4h.01M12 12h.01M12 20h.01',
   skip: 'm5 5 10 7-10 7ZM19 5v14',
@@ -34,16 +37,24 @@ export function Icon({
   name,
   color,
   size = sizes.icon,
+  mirrorInRTL = true,
 }: {
   name: IconName;
   color: string;
   size?: number;
+  mirrorInRTL?: boolean;
 }) {
+  useTranslation();
+  const mirrored =
+    mirrorInRTL &&
+    getLanguage() === 'ar-EG' &&
+    (name === 'arrowLeft' || name === 'arrowRight' || name === 'skip');
   return (
     <Svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
+      style={mirrored ? { transform: [{ scaleX: -1 }] } : undefined}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >

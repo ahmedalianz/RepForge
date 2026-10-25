@@ -1,3 +1,5 @@
+import { formatNumber } from '../../../localization/format';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import { opacity, radii, sizes, spacing } from '../../../app/theme/tokens';
@@ -13,15 +15,18 @@ export function RecordSummary({
   dashboard: DashboardPresentation;
   onRecords: () => void;
 }) {
+  const { t } = useTranslation('home');
   const { colors } = useTheme();
   const record = dashboard.record;
   const weight = record?.weight ?? '—';
-  const repetitions = record ? String(record.reps) : '—';
-  const comparison = dashboard.hasComparison ? 'vs prior 30d' : 'No baseline';
+  const repetitions = record ? formatNumber(record.reps) : '—';
+  const comparison = dashboard.hasComparison
+    ? t('priorMonth')
+    : t('noBaseline');
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="View personal records"
+      accessibilityLabel={t('viewRecords')}
       onPress={onRecords}
       style={({ pressed }) => pressed && styles.pressed}
     >
@@ -43,7 +48,7 @@ export function RecordSummary({
               variant="labelSm"
               style={[layout.uppercase, { color: colors.onMilestone }]}
             >
-              Personal Record
+              {t('personalRecord')}
             </Text>
           </View>
           {record ? (
@@ -54,12 +59,15 @@ export function RecordSummary({
         </View>
         <View style={styles.record}>
           <Text variant="headlineSm">
-            {record?.exerciseName ?? 'Your first PR starts here'}
+            {record?.exerciseName ?? t('firstRecord')}
           </Text>
           <View style={layout.metricRow}>
             <Text variant="metricMd">{weight}</Text>
             <Text variant="bodyBold" tone="muted">
-              {dashboard.unit} × {repetitions} reps
+              {t('recordPerformance', {
+                unit: dashboard.unit,
+                reps: repetitions,
+              })}
             </Text>
             {record?.delta ? (
               <Text
@@ -72,7 +80,7 @@ export function RecordSummary({
                   },
                 ]}
               >
-                {record.delta} delta
+                {t('delta', { value: record.delta })}
               </Text>
             ) : null}
           </View>
@@ -82,9 +90,9 @@ export function RecordSummary({
             style={[layout.inset, { backgroundColor: colors.surfaceLowest }]}
           >
             <Text variant="labelSm" tone="muted">
-              ESTIMATED 1RM
+              {t('estimatedMax')}
             </Text>
-            <View style={layout.metricRow}>
+            <View style={[layout.metricRow, styles.estimateRow]}>
               <Text variant="headlineSm">{dashboard.estimate}</Text>
               <Text variant="labelSm" tone="muted">
                 {dashboard.unit}
@@ -95,7 +103,7 @@ export function RecordSummary({
             style={[layout.inset, { backgroundColor: colors.surfaceLowest }]}
           >
             <Text variant="labelSm" tone="muted">
-              30-DAY LOAD
+              {t('monthLoad')}
             </Text>
             <View style={[layout.row, styles.comparison]}>
               <Icon
@@ -118,6 +126,7 @@ export function RecordSummary({
 }
 const styles = StyleSheet.create({
   record: { gap: spacing.xs },
+  estimateRow: { direction: 'inherit' },
   recordBadge: { borderRadius: radii.sm },
   metrics: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xs },
   comparison: { gap: spacing.xs, flexWrap: 'wrap' },
@@ -125,7 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
     paddingHorizontal: spacing.xs,
     paddingVertical: spacing.micro,
-    marginLeft: spacing.xs,
+    marginStart: spacing.xs,
   },
   pressed: { opacity: opacity.pressed },
 });

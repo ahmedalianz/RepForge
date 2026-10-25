@@ -6,6 +6,7 @@ type PreferencesState = Preferences & {
 /** Hydrated from SQLite on startup; writes are persisted before updating this UI cache. */
 export const usePreferencesStore = create<PreferencesState>(set => ({
   theme: 'dark',
+  language: 'ar-EG',
   weightUnit: 'kg',
   setPreferences: preferences => set(preferences),
 }));

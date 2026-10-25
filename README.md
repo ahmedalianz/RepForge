@@ -155,7 +155,8 @@ repository factory provides a typed boundary without a DI container, base class 
 unnecessary service hierarchy.
 
 The root native stack wraps Home, Workouts, Progress and Profile tabs and exposes
-Start Workout, Workout Details, Exercise Details, Personal Records and Goals.
+Workout Details, Exercise Details, Personal Records and Goals. Home Start Workout
+and the center + action create or resume a session and open the active editor directly.
 Detail routes carry IDs rather than whole database objects. Android installs the
 Screens fragment factory for Activity recreation and disables predictive back per
 React Navigation's current installation instructions. Navigation handles vertical
@@ -319,3 +320,36 @@ The existing Android debug app relaunched successfully. Interactive active-edito
 QA on Android remains unverified because computer-use tooling could not attach to
 the emulator window. This update adds no native dependencies; native builds were
 validated in the dashboard update above, not repeated for these TypeScript changes.
+
+## Progress analytics
+
+Progress now implements the supplied analytics design: Strength & 1RM, Volume and
+Consistency views, exercise selection, persisted kg/lb display, calendar date ranges,
+SVG charts, metric cards, six-week push/pull/legs splits, recorded load history and a
+factual training note. History rows open their saved workout. Epley estimates and
+recorded external-load milestones stay separate; no automatic weight prescription
+or sample training history is added. No new dependencies or schema migration are
+needed. See [analytics definitions](docs/design/progress-analytics.md).
+
+Feature code lives in `src/features/progress/{screens,components,hooks,domain,data}`.
+The brand header, calendar boundaries and duration formatting are shared with Home;
+the recorded-load query is shared across summaries and history. Tests exercise real
+SQLite eligibility, date boundaries, tie ordering, estimates, units and navigation.
+
+Analytics validation: **56 tests across nine suites**, strict TypeScript, ESLint,
+Prettier and Git whitespace checks pass. The code review found no actionable
+correctness issues. Existing iOS and Android debug apps were reloaded; native
+chart, metrics, split and history layouts were inspected using temporary in-memory
+visual fixtures, then source and normal launch behavior were restored without
+writing sample workouts. Filter/unit/history interactions are covered by RNTL with
+real SQLite. Manual native interaction QA remains unverified because CUA returned
+stale simulator controls. No fresh native compilation or store archive was run for
+this TypeScript-only update.
+
+### Arabic and English
+
+Egyptian Arabic is the default language, with native RTL and bundled IBM Plex Sans
+Arabic. English is available in Profile → Language and retains Plus Jakarta Sans.
+Direction changes take effect after fully closing and reopening RepForge; active
+workouts are never silently reloaded. See the [localization guide](docs/design/localization.md)
+for persistence, typography, bidirectional layout and device-testing details.

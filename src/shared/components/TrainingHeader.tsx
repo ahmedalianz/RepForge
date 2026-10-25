@@ -1,11 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../../app/theme/ThemeProvider';
-import { opacity, radii, sizes, spacing } from '../../../app/theme/tokens';
-import { Icon } from '../../../shared/components/Icon';
-import { Text } from '../../../shared/components/Text';
-import { dashboardStyles as layout } from './dashboardStyles';
-export function DashboardHeader({
+import { useTheme } from '../../app/theme/ThemeProvider';
+import { opacity, radii, sizes, spacing } from '../../app/theme/tokens';
+import { Icon } from './Icon';
+import { Text } from './Text';
+export function TrainingHeader({
   streak,
   onProfile,
 }: {
@@ -13,6 +13,7 @@ export function DashboardHeader({
   onProfile: () => void;
 }) {
   const { colors } = useTheme();
+  const { t } = useTranslation('common');
   const insets = useSafeAreaInsets();
   return (
     <View
@@ -30,13 +31,13 @@ export function DashboardHeader({
           },
         ]}
       >
-        <View style={layout.row}>
+        <View style={styles.row}>
           <View
             style={[styles.brandMark, { backgroundColor: colors.surfaceLow }]}
           >
             <Icon name="forge" color={colors.primary} size={sizes.smallIcon} />
           </View>
-          <Text variant="headlineSm" style={layout.uppercase}>
+          <Text variant="headlineSm" style={styles.uppercase}>
             RepForge
           </Text>
         </View>
@@ -44,11 +45,11 @@ export function DashboardHeader({
           {streak ? (
             <View
               style={[
-                layout.badge,
+                styles.badge,
                 styles.streak,
                 { backgroundColor: colors.surfaceHigh },
               ]}
-              accessibilityLabel={`${streak} training streak`}
+              accessibilityLabel={t('streak', { streak })}
             >
               <Icon name="fire" color={colors.primary} size={sizes.badgeIcon} />
               <Text variant="labelSm" style={{ color: colors.primary }}>
@@ -58,7 +59,7 @@ export function DashboardHeader({
           ) : null}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Open profile"
+            accessibilityLabel={t('openProfile')}
             onPress={onProfile}
             style={({ pressed }) => [styles.profile, pressed && styles.pressed]}
           >
@@ -74,6 +75,15 @@ export function DashboardHeader({
   );
 }
 const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  uppercase: { textTransform: 'uppercase' },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
   content: {
     height: sizes.header,
     flexDirection: 'row',

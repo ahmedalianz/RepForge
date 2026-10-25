@@ -1,3 +1,4 @@
+import { PromptProvider } from '../../src/app/providers/PromptProvider';
 import {
   fireEvent,
   render,
@@ -59,6 +60,9 @@ jest.mock('../../src/features/home/data/dashboardRepository', () => {
     })),
   };
 });
+jest.mock('../../src/features/progress/data/progressRepository', () => ({
+  readProgress: () => ({ exercises: [], sets: [], sessions: [], records: [] }),
+}));
 beforeEach(() => {
   mockWorkouts.getActiveSession.mockReturnValue(null);
   jest.clearAllMocks();
@@ -67,7 +71,9 @@ function TestNavigation() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <RootNavigator />
+        <PromptProvider>
+          <RootNavigator />
+        </PromptProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
@@ -75,9 +81,6 @@ function TestNavigation() {
 test('Home starts a workout through the real stack', async () => {
   await render(<TestNavigation />);
   await fireEvent.press(screen.getByRole('button', { name: 'Start Workout' }));
-  await fireEvent.press(
-    await screen.findByRole('button', { name: 'Begin Session' }),
-  );
   await waitFor(() =>
     expect(screen.getByText('Build your workout')).toBeOnTheScreen(),
   );
@@ -95,25 +98,21 @@ test('Progress tab opens personal records', async () => {
   await fireEvent.press(
     await screen.findByRole('button', { name: 'Personal Records' }),
   );
-  expect(
-    await screen.findByText(/Recorded lifts and estimated/),
-  ).toBeOnTheScreen();
+  expect(await screen.findByText('No records yet')).toBeOnTheScreen();
 });
 
-test('dashboard resumes an existing workout and its center action opens the start flow', async () => {
+test('dashboard resumes an existing workout directly', async () => {
   mockWorkouts.getActiveSession.mockReturnValue(session);
   await render(<TestNavigation />);
   await fireEvent.press(screen.getByRole('button', { name: 'Resume Workout' }));
   expect(await screen.findByText('Build your workout')).toBeOnTheScreen();
 });
-test('raised quick-start action opens the start flow', async () => {
+test('raised quick-start action opens the active workout directly', async () => {
   await render(<TestNavigation />);
   await fireEvent.press(
     screen.getByRole('button', { name: 'Quick start workout' }),
   );
-  expect(
-    await screen.findByRole('button', { name: 'Begin Session' }),
-  ).toBeOnTheScreen();
+  expect(await screen.findByText('Build your workout')).toBeOnTheScreen();
 });
 
 test('dashboard profile shortcut selects the Profile tab', async () => {

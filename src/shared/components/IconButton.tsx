@@ -11,12 +11,14 @@ import { Icon, type IconName } from './Icon';
 type Props = Omit<PressableProps, 'children' | 'style'> & {
   icon: IconName;
   label: string;
+  mirrorInRTL?: boolean;
   variant?: 'neutral' | 'primary' | 'selected' | 'ghost';
   style?: StyleProp<ViewStyle>;
 };
 export function IconButton({
   icon,
   label,
+  mirrorInRTL,
   variant = 'neutral',
   style,
   disabled,
@@ -59,7 +61,7 @@ export function IconButton({
         disabled && styles.disabled,
       ]}
     >
-      <Icon name={icon} color={color} />
+      <Icon name={icon} color={color} mirrorInRTL={mirrorInRTL} />
     </Pressable>
   );
 }

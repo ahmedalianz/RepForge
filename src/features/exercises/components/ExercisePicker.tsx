@@ -1,3 +1,12 @@
+import { getLocalizedTypography } from '../../../localization/typography';
+import { useTranslation } from 'react-i18next';
+import {
+  getExerciseName,
+  getMuscleName,
+  getEquipmentName,
+  getExerciseTypeName,
+} from '../../../localization/exercises';
+import { t } from '../../../localization/i18n';
 import {
   FlatList,
   Modal,
@@ -22,17 +31,20 @@ import { Button } from '../../../shared/components/Button';
 import { useExerciseCatalog } from '../hooks/useExerciseCatalog';
 export function ExercisePicker({
   visible,
+  mode = 'add',
   selectedIds,
   error,
   onSelect,
   onClose,
 }: {
   visible: boolean;
+  mode?: 'add' | 'select';
   selectedIds: readonly string[];
   error?: string;
   onSelect: (id: string) => boolean;
   onClose: () => void;
 }) {
+  const { i18n } = useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const catalog = useExerciseCatalog(visible);
@@ -62,22 +74,28 @@ export function ExercisePicker({
           ]}
         >
           <View style={styles.header}>
-            <Text variant="headlineMd">Add Exercise</Text>
+            <Text variant="headlineMd">
+              {mode === 'add' ? t('exercises:add') : t('exercises:choose')}
+            </Text>
             <IconButton
               icon="close"
-              label="Close exercise picker"
+              label={t('exercises:closePicker')}
               onPress={onClose}
             />
           </View>
           <TextInput
-            accessibilityLabel="Search exercises"
-            placeholder="Search exercises or muscle groups"
+            accessibilityLabel={t('exercises:search')}
+            placeholder={t('exercises:searchPlaceholder')}
             placeholderTextColor={colors.subtle}
             value={catalog.query}
             onChangeText={catalog.setQuery}
             autoCorrect={false}
             style={[
               styles.search,
+              getLocalizedTypography('body'),
+              i18n.language === 'ar-EG'
+                ? styles.arabicSearch
+                : styles.englishSearch,
               {
                 color: colors.text,
                 backgroundColor: colors.surface,
@@ -92,7 +110,7 @@ export function ExercisePicker({
               </Text>
               {catalog.error ? (
                 <Button
-                  title="Retry"
+                  title={t('common:retry')}
                   variant="secondary"
                   onPress={catalog.refresh}
                 />
@@ -105,7 +123,7 @@ export function ExercisePicker({
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <Text tone="muted" style={styles.empty}>
-                No exercises found. Try another name.
+                {t('exercises:empty')}
               </Text>
             }
             renderItem={({ item: exercise }) => {
@@ -113,9 +131,17 @@ export function ExercisePicker({
               return (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Add ${exercise.name}`}
-                  accessibilityState={{ disabled: added }}
-                  disabled={added}
+                  accessibilityLabel={t(
+                    mode === 'add'
+                      ? 'exercises:addName'
+                      : 'exercises:selectName',
+                    { name: getExerciseName(exercise.id, exercise.name) },
+                  )}
+                  accessibilityState={{
+                    disabled: mode === 'add' && added,
+                    selected: mode === 'select' && added,
+                  }}
+                  disabled={mode === 'add' && added}
                   onPress={() => {
                     if (onSelect(exercise.id)) {
                       onClose();
@@ -125,15 +151,18 @@ export function ExercisePicker({
                     styles.exercise,
                     { borderBottomColor: colors.border },
                     pressed && styles.pressed,
-                    added && styles.added,
+                    mode === 'add' && added && styles.added,
                   ]}
                 >
                   <Icon name="dumbbell" color={colors.primary} />
                   <View style={styles.exerciseName}>
-                    <Text variant="bodyBold">{exercise.name}</Text>
+                    <Text variant="bodyBold">
+                      {getExerciseName(exercise.id, exercise.name)}
+                    </Text>
                     <Text variant="caption">
-                      {exercise.primaryMuscleGroup} • {exercise.equipment} •{' '}
-                      {exercise.exerciseType}
+                      {getMuscleName(exercise.primaryMuscleGroup)} •{' '}
+                      {getEquipmentName(exercise.equipment)} •{' '}
+                      {getExerciseTypeName(exercise.exerciseType)}
                     </Text>
                   </View>
                   <Icon
@@ -163,6 +192,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.md,
   },
+  arabicSearch: { textAlign: 'start', writingDirection: 'rtl' },
+  englishSearch: { textAlign: 'start', writingDirection: 'ltr' },
   search: {
     ...typography.body,
     minHeight: sizes.touchTarget,

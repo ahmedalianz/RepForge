@@ -1,3 +1,11 @@
+import { useTranslation } from 'react-i18next';
+import {
+  getExerciseName,
+  getMuscleName,
+  getExerciseCategoryName,
+} from '../../../localization/exercises';
+import { unitLabel } from '../../../localization/format';
+import { t } from '../../../localization/i18n';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import { radii, sizes, spacing } from '../../../app/theme/tokens';
@@ -22,19 +30,22 @@ export function ExercisePanelHeader({
   editable: boolean;
   onOptions: () => void;
 }) {
+  useTranslation();
   const { colors } = useTheme();
   const { exercise } = group;
   const muscles = [
     exercise.primaryMuscleGroup,
     ...exercise.secondaryMuscleGroups,
-  ].join(' • ');
+  ]
+    .map(getMuscleName)
+    .join(' • ');
   const previous = getPreviousPerformance(group, unit);
   const loadHeading =
     exercise.exerciseType === 'bodyweight'
-      ? 'BW'
+      ? t('workouts:bodyweight')
       : exercise.exerciseType === 'assisted'
-        ? 'ASSIST'
-        : unit.toUpperCase();
+        ? t('workouts:assistance')
+        : unitLabel(unit);
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
@@ -50,22 +61,27 @@ export function ExercisePanelHeader({
                 },
               ]}
             >
-              {exercise.category.toUpperCase()}
+              {getExerciseCategoryName(exercise.category)}
             </Text>
             <Text variant="labelSm" tone="muted" style={styles.muscles}>
-              {muscles.toUpperCase()}
+              {muscles}
             </Text>
           </View>
-          <Text variant="headlineMd">{exercise.name}</Text>
+          <Text variant="headlineMd">
+            {getExerciseName(exercise.id, exercise.name)}
+          </Text>
         </View>
         {editable ? (
           <IconButton
             icon="more"
-            label="Exercise options"
+            label={t('workouts:exerciseOptions')}
             onPress={onOptions}
           />
         ) : null}
       </View>
+      <Text variant="captionSm" tone="muted">
+        {t('workouts:rpeHelp')}
+      </Text>
       <View style={[styles.best, { backgroundColor: colors.surfaceLow }]}>
         <Icon name="trophy" color={colors.milestone} size={sizes.smallIcon} />
         <Text variant="labelMd" tone="muted">
@@ -87,21 +103,21 @@ export function ExercisePanelHeader({
           tone="muted"
           style={[columns.index, styles.center]}
         >
-          SET
+          {t('workouts:set')}
         </Text>
         {!compact ? (
           <Text variant="labelSm" tone="muted" style={columns.previous}>
-            PREVIOUS
+            {t('workouts:previous')}
           </Text>
         ) : null}
         <Text variant="labelSm" tone="muted" style={columns.numeric}>
           {loadHeading}
         </Text>
         <Text variant="labelSm" tone="muted" style={columns.numeric}>
-          REPS
+          {t('workouts:reps')}
         </Text>
         <Text variant="labelSm" tone="muted" style={columns.numeric}>
-          RPE
+          {t('workouts:rpe')}
         </Text>
         <Text
           variant="labelSm"
@@ -110,7 +126,7 @@ export function ExercisePanelHeader({
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          COMPLETE
+          {t('workouts:complete')}
         </Text>
       </View>
     </Card>
@@ -145,7 +161,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     borderRadius: radii.md,
   },
-  bestValue: { flexShrink: 1 },
+  bestValue: { writingDirection: 'ltr', flexShrink: 1 },
   labels: { paddingHorizontal: spacing.sm },
   center: { textAlign: 'center' },
 });

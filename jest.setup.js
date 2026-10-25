@@ -23,3 +23,10 @@ jest.mock('react-native-screens', () => {
     ScreenContentWrapper: View,
   };
 });
+
+jest.mock('react-native-localize', () => ({
+  getTimeZone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+}));
+beforeEach(() =>
+  require('./src/localization/i18n').initializeLocalization('en-US'),
+);

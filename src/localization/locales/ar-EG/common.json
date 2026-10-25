@@ -1,0 +1,20 @@
+{
+  "retry": "جرّب تاني",
+  "cancel": "إلغاء",
+  "back": "رجوع",
+  "save": "حفظ",
+  "delete": "حذف",
+  "close": "إغلاق",
+  "loading": "بنجهّز سجل تمارينك…",
+  "unknownError": "حصلت مشكلة. جرّب تاني.",
+  "units": {
+    "kg": "كجم",
+    "lb": "رطل"
+  },
+  "duration": {
+    "minutes": "{{minutes}} د",
+    "hoursMinutes": "{{hours}} س و{{minutes}} د"
+  },
+  "openProfile": "افتح الملف الشخصي",
+  "streak": "سلسلة التزام: {{streak}}"
+}

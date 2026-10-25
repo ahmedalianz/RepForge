@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../../localization/format';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import { sizes, spacing } from '../../../app/theme/tokens';
@@ -10,6 +12,7 @@ export function QuickStats({
 }: {
   dashboard: DashboardPresentation;
 }) {
+  const { t } = useTranslation('home');
   const { colors } = useTheme();
   const metrics: {
     label: string;
@@ -19,25 +22,32 @@ export function QuickStats({
     accessibilityLabel: string;
   }[] = [
     {
-      label: `Weekly\nVolume (${dashboard.unit})`,
+      label: t('weeklyVolume', { unit: dashboard.unit }),
       value: dashboard.compactVolume,
       icon: 'dumbbell',
       color: colors.secondary,
-      accessibilityLabel: `Weekly external volume: ${dashboard.weeklyVolume} ${dashboard.unit}`,
+      accessibilityLabel: t('volumeAccessibility', {
+        volume: dashboard.weeklyVolume,
+        unit: dashboard.unit,
+      }),
     },
     {
-      label: 'Total\nWorkouts',
-      value: String(dashboard.totalWorkouts),
+      label: t('totalWorkouts'),
+      value: formatNumber(dashboard.totalWorkouts),
       icon: 'checkCircle',
       color: colors.primary,
-      accessibilityLabel: `${dashboard.totalWorkouts} completed workouts in total`,
+      accessibilityLabel: t('totalAccessibility', {
+        count: dashboard.totalWorkouts,
+      }),
     },
     {
-      label: 'Active Time',
+      label: t('activeTime'),
       value: dashboard.activeTime,
       icon: 'timer',
       color: colors.milestone,
-      accessibilityLabel: `Active time this week: ${dashboard.activeTime}`,
+      accessibilityLabel: t('timeAccessibility', {
+        time: dashboard.activeTime,
+      }),
     },
   ];
   return (

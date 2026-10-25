@@ -1,19 +1,22 @@
+import { useTranslation } from 'react-i18next';
+import { useStartWorkout } from '../../features/workouts/hooks/useStartWorkout';
 import { Fragment } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../theme/ThemeProvider';
 import { opacity, radii, shadows, sizes, spacing } from '../theme/tokens';
 import { Text } from '../../shared/components/Text';
 import { Icon } from '../../shared/components/Icon';
 import { TabIcon } from './TabIcon';
-import type { RootStackParamList, TabParamList } from './types';
+import type { TabParamList } from './types';
 export function TrainingTabBar({
   state,
   navigation,
   insets,
 }: BottomTabBarProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation('navigation');
+  const startWorkout = useStartWorkout();
   return (
     <View
       style={[
@@ -36,14 +39,8 @@ export function TrainingTabBar({
                 <View style={styles.actionSlot}>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Quick start workout"
-                    onPress={() =>
-                      navigation
-                        .getParent<
-                          NativeStackNavigationProp<RootStackParamList>
-                        >()
-                        ?.navigate('StartWorkout')
-                    }
+                    accessibilityLabel={t('quickStart')}
+                    onPress={startWorkout}
                     style={({ pressed }) => [
                       styles.action,
                       {
@@ -64,7 +61,7 @@ export function TrainingTabBar({
               ) : null}
               <Pressable
                 accessibilityRole="tab"
-                accessibilityLabel={name}
+                accessibilityLabel={t(name)}
                 accessibilityState={{ selected }}
                 onPress={() => {
                   const event = navigation.emit({
@@ -83,7 +80,7 @@ export function TrainingTabBar({
               >
                 <TabIcon name={name} color={color} />
                 <Text variant="labelSm" style={{ color }}>
-                  {name}
+                  {t(name)}
                 </Text>
               </Pressable>
             </Fragment>

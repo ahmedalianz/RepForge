@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import Svg, {
   Defs,
@@ -22,20 +23,17 @@ export function WorkoutHero({
   hasActiveSession: boolean;
   onStart: () => void;
 }) {
+  const { t } = useTranslation('home');
   const { colors } = useTheme();
-  const heading = hasActiveSession
-    ? 'Continue your workout'
-    : 'Freestyle workout';
-  const action = hasActiveSession ? 'Resume Workout' : 'Start Workout';
-  const subtitle = hasActiveSession
-    ? 'Your session is saved • Pick up where you left off'
-    : 'Choose exercises • Set your pace • Log sets';
+  const heading = hasActiveSession ? t('continueHeading') : t('freestyle');
+  const action = hasActiveSession ? t('resume') : t('start');
+  const subtitle = hasActiveSession ? t('saved') : t('heroSubtitle');
   return (
     <>
       <View style={styles.intro}>
         <View style={styles.greeting}>
           <Text variant="labelSm" tone="muted" style={layout.uppercase}>
-            Your training, forged daily
+            {t('tagline')}
           </Text>
           <Text variant="title" style={layout.uppercase}>
             {greeting}
@@ -48,8 +46,8 @@ export function WorkoutHero({
             size={sizes.smallIcon}
           />
           <Text numberOfLines={1} style={styles.nextText} tone="muted">
-            Next: <Text variant="bodyBold">{heading}</Text>
-            {hasActiveSession ? ' • In progress' : ' • Ready when you are'}
+            {t('next')} <Text variant="bodyBold">{heading}</Text>
+            {hasActiveSession ? t('inProgressSuffix') : t('readySuffix')}
           </Text>
         </View>
       </View>
@@ -88,7 +86,7 @@ export function WorkoutHero({
               variant="labelSm"
               style={[layout.uppercase, { color: colors.primary }]}
             >
-              {hasActiveSession ? 'Workout in progress' : 'Your next workout'}
+              {hasActiveSession ? t('inProgress') : t('nextWorkout')}
             </Text>
           </View>
           <View
@@ -98,7 +96,7 @@ export function WorkoutHero({
             ]}
           >
             <Text variant="labelSm" tone="muted">
-              OFFLINE READY
+              {t('offline')}
             </Text>
           </View>
         </View>

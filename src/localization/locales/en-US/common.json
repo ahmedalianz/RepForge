@@ -1,0 +1,20 @@
+{
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "back": "Back",
+  "save": "Save",
+  "delete": "Delete",
+  "close": "Close",
+  "loading": "Loading your training log…",
+  "unknownError": "Something went wrong. Please try again.",
+  "units": {
+    "kg": "kg",
+    "lb": "lb"
+  },
+  "duration": {
+    "minutes": "{{minutes}}m",
+    "hoursMinutes": "{{hours}}h{{minutes}}m"
+  },
+  "openProfile": "Open profile",
+  "streak": "{{streak}} training streak"
+}

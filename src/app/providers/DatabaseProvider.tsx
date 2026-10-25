@@ -1,3 +1,12 @@
+import { useTranslation } from 'react-i18next';
+import {
+  initializeLocalization,
+  t as translate,
+} from '../../localization/i18n';
+import {
+  prepareNativeDirection,
+  needsDirectionRestart,
+} from '../../localization/direction';
 import {
   createContext,
   useContext,
@@ -5,7 +14,7 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { I18nManager, View, StyleSheet } from 'react-native';
 import { getDatabase } from '../../database/connection';
 import { createWorkoutRepository } from '../../database/repositories/workoutRepository';
 import type { Database } from '../../database/types';
@@ -22,48 +31,70 @@ const DatabaseContext = createContext<Services | null>(null);
 type StartupState =
   | { status: 'loading' }
   | { status: 'ready'; services: Services }
-  | { status: 'error'; message: string };
+  | { status: 'error'; message: string }
+  | { status: 'restart-required' };
 export function DatabaseProvider({ children }: PropsWithChildren) {
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<StartupState>({ status: 'loading' });
   const { colors } = useTheme();
+  const { t } = useTranslation(['settings', 'common']);
   useEffect(() => {
     // Yield a frame so the loading state can render before synchronous native initialization.
-    const timeout = setTimeout(() => {
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
       try {
         const database = getDatabase();
-        usePreferencesStore
-          .getState()
-          .setPreferences(loadPreferences(database));
+        const preferences = loadPreferences(database);
+        prepareNativeDirection(preferences.language);
+        await initializeLocalization(preferences.language);
+        if (cancelled) {
+          return;
+        }
+        usePreferencesStore.getState().setPreferences(preferences);
+        if (needsDirectionRestart(preferences.language, I18nManager.isRTL)) {
+          setState({ status: 'restart-required' });
+          return;
+        }
         setState({
           status: 'ready',
           services: { database, workouts: createWorkoutRepository(database) },
         });
-      } catch (error) {
+      } catch {
+        if (cancelled) {
+          return;
+        }
         setState({
           status: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Unable to open local storage',
+          message: translate('settings:storageError'),
         });
       }
     }, 0);
-    return () => clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [attempt]);
   if (state.status === 'loading') {
-    return <LoadingState />;
+    return <LoadingState message="" />;
+  }
+  if (state.status === 'restart-required') {
+    return (
+      <View style={[styles.error, { backgroundColor: colors.background }]}>
+        <Text variant="heading">{t('readyRestart')}</Text>
+        <Text>{t('pendingRestart')}</Text>
+      </View>
+    );
   }
   //TODO: need better ui for the error here
   if (state.status === 'error') {
     return (
       <View style={[styles.error, { backgroundColor: colors.background }]}>
-        <Text variant="heading">Your training log could not open</Text>
+        <Text variant="heading">{t('startupError')}</Text>
         <Text tone="danger" accessibilityRole="alert">
           {state.message}
         </Text>
         <Button
-          title="Retry"
+          title={t('common:retry')}
           onPress={() => {
             setState({ status: 'loading' });
             setAttempt(value => value + 1);

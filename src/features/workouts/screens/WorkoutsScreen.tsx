@@ -1,31 +1,22 @@
-import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../localization/i18n';
+import { useStartWorkout } from '../hooks/useStartWorkout';
 import { useWorkoutSession } from '../hooks/useWorkoutSession';
 import { Screen } from '../../../shared/components/Screen';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { Button } from '../../../shared/components/Button';
 import { Text } from '../../../shared/components/Text';
 export function WorkoutsScreen() {
-  const navigation = useNavigation();
+  useTranslation();
+  const startWorkout = useStartWorkout();
   const { session, error } = useWorkoutSession();
   return (
     <Screen>
-      <EmptyState
-        title="Workout log"
-        message="Session recovery is ready. Exercise logging and workout history will follow the final designs."
-      >
+      <EmptyState title={t('workouts:log')} message={t('workouts:logMessage')}>
         <Button
-          title="Start Workout"
-          onPress={() => navigation.navigate('StartWorkout')}
+          title={session ? t('workouts:resume') : t('workouts:start')}
+          onPress={startWorkout}
         />
-        {session ? (
-          <Button
-            title="Resume Workout"
-            variant="secondary"
-            onPress={() =>
-              navigation.navigate('WorkoutDetails', { sessionId: session.id })
-            }
-          />
-        ) : null}
       </EmptyState>
       {error ? (
         <Text tone="danger" accessibilityRole="alert">

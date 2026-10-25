@@ -1,8 +1,12 @@
+import { useTranslation } from 'react-i18next';
+import { localizeError } from '../../../localization/errors';
+import { t } from '../../../localization/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { useDatabase } from '../../../app/providers/DatabaseProvider';
 import { searchExercises } from '../data/exerciseRepository';
 import type { Exercise } from '../domain/types';
 export function useExerciseCatalog(visible: boolean) {
+  useTranslation();
   const { database } = useDatabase();
   const [query, setQuery] = useState('');
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -12,9 +16,7 @@ export function useExerciseCatalog(visible: boolean) {
       setExercises(searchExercises(database, query));
       setError(null);
     } catch (failure) {
-      setError(
-        failure instanceof Error ? failure.message : 'Exercises could not load',
-      );
+      setError(localizeError(failure, t('exercises:loadError')));
     }
   }, [database, query]);
   useEffect(() => {

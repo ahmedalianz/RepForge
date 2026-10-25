@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../localization/i18n';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import { radii, sizes, spacing } from '../../../app/theme/tokens';
@@ -18,6 +20,7 @@ export function RestCountdown({
   onExtend: () => void;
   onSkip: () => void;
 }) {
+  useTranslation();
   const { width } = useWindowDimensions();
   const compact = width < 390;
   const { colors } = useTheme();
@@ -51,7 +54,7 @@ export function RestCountdown({
           <View style={styles.readout}>
             <View style={styles.status}>
               <Text variant="labelSm" tone="muted">
-                REST COUNTDOWN
+                {t('workouts:restCountdown')}
               </Text>
               <Text
                 variant="labelSm"
@@ -63,25 +66,29 @@ export function RestCountdown({
                   },
                 ]}
               >
-                {rest.active ? 'ACTIVE' : 'READY'}
+                {rest.active ? t('workouts:active') : t('workouts:ready')}
               </Text>
             </View>
             <View style={styles.baseline}>
               <Text
                 variant="metricMd"
+                style={styles.numeric}
                 numberOfLines={1}
                 adjustsFontSizeToFit
-                accessibilityLabel={`Rest remaining ${rest.label}`}
+                accessibilityLabel={t('workouts:restTime', {
+                  time: rest.label,
+                })}
               >
                 {rest.label}
               </Text>
               <Text variant="labelMd" tone="muted">
-                left
+                {t('workouts:left')}
               </Text>
             </View>
           </View>
           <Button
-            title="+30s"
+            title={t('workouts:extendRest')}
+            labelStyle={styles.numeric}
             leadingIcon={compact ? undefined : 'timer'}
             variant="secondary"
             size="compact"
@@ -89,7 +96,7 @@ export function RestCountdown({
           />
           <IconButton
             icon="skip"
-            label="Skip rest"
+            label={t('workouts:skipRest')}
             disabled={!rest.active}
             onPress={onSkip}
           />
@@ -97,7 +104,7 @@ export function RestCountdown({
         <View
           style={[styles.track, { backgroundColor: colors.surfaceLowest }]}
           accessibilityRole="progressbar"
-          accessibilityLabel="Rest remaining"
+          accessibilityLabel={t('workouts:restRemaining')}
           accessibilityValue={{
             min: 0,
             max: 100,
@@ -119,6 +126,7 @@ export function RestCountdown({
   );
 }
 const styles = StyleSheet.create({
+  numeric: { writingDirection: 'ltr' },
   wrapper: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,

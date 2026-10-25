@@ -1,0 +1,56 @@
+{
+  "add": "ضيف تمرين",
+  "choose": "اختار تمرين",
+  "closePicker": "اقفل اختيار التمارين",
+  "search": "دوّر على تمرين",
+  "searchPlaceholder": "دوّر باسم التمرين أو العضلة",
+  "empty": "مفيش تمارين بالاسم ده. جرّب اسم تاني.",
+  "loadError": "مش قادرين نحمّل التمارين",
+  "details": "تفاصيل التمرين",
+  "noneSelected": "مفيش تمرين متحدد",
+  "planned": "مرجع التمرين: {{id}}. كتالوج التمارين وتفاصيل الأداء هييجوا في المرحلة الجاية.",
+  "addName": "ضيف {{name}}",
+  "selectName": "اختار {{name}}",
+  "names": {
+    "barbell-bench-press": "بنش بار مستوي",
+    "incline-dumbbell-press": "بنش مائل بالدمبل",
+    "standing-overhead-press": "ضغط كتف واقف بالبار",
+    "barbell-back-squat": "سكوات بالبار خلف الرقبة",
+    "barbell-deadlift": "ديدليفت بالبار",
+    "pull-up": "عقلة",
+    "assisted-pull-up": "عقلة بمساعدة",
+    "push-up": "ضغط",
+    "dumbbell-curl": "بايسبس بالدمبل",
+    "cable-triceps-pushdown": "ترايسبس سحب لتحت بالكابل"
+  },
+  "muscles": {
+    "chest": "الصدر",
+    "front delts": "الكتف الأمامي",
+    "triceps": "الترايسبس",
+    "shoulders": "الكتف",
+    "quads": "الفخذ الأمامي",
+    "glutes": "المؤخرة",
+    "hamstrings": "الفخذ الخلفي",
+    "posterior chain": "العضلات الخلفية",
+    "back": "الضهر",
+    "biceps": "البايسبس"
+  },
+  "equipment": {
+    "barbell": "بار",
+    "dumbbell": "دمبل",
+    "pull-up bar": "بار عقلة",
+    "assisted machine": "جهاز مساعدة",
+    "none": "من غير أدوات",
+    "cable": "كابل"
+  },
+  "types": {
+    "external": "وزن إضافي",
+    "bodyweight": "وزن الجسم",
+    "assisted": "بمساعدة"
+  },
+  "categories": {
+    "compound": "مركّب",
+    "isolation": "عزل",
+    "other": "أخرى"
+  }
+}

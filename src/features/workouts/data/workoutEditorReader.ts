@@ -1,3 +1,4 @@
+import { t } from '../../../localization/i18n';
 import type { Database } from '../../../database/types';
 import { getExercise } from '../../exercises/data/exerciseRepository';
 import { mapWorkoutSet } from '../../../database/repositories/workoutRows';
@@ -20,9 +21,9 @@ export function readWorkoutEditor(
     ? String(
         database.execute('SELECT name FROM workout_routines WHERE id = ?', [
           session.routineId,
-        ]).rows[0]?.name ?? 'Workout',
+        ]).rows[0]?.name ?? t('workouts:workout'),
       )
-    : 'Freestyle workout';
+    : t('workouts:freestyle');
   const runtime = database.execute(
     'SELECT * FROM workout_runtime WHERE session_id = ?',
     [sessionId],

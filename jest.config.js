@@ -5,6 +5,7 @@ module.exports = {
     {
       displayName: 'domain',
       testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.domain.setup.js'],
       testMatch: ['<rootDir>/__tests__/domain/**/*.test.ts'],
       transform,
     },

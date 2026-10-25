@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeError } from '../../../localization/errors';
 import { useCallback, useState } from 'react';
 import { AppState } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -19,6 +21,7 @@ type DashboardState =
     };
 const CLOCK_REFRESH_MS = 60_000;
 export function useDashboard() {
+  const { t } = useTranslation('home');
   const { database, workouts } = useDatabase();
   const unit = usePreferencesStore(state => state.weightUnit);
   const [state, setState] = useState<DashboardState>({ status: 'loading' });
@@ -37,13 +40,10 @@ export function useDashboard() {
     } catch (error) {
       setState({
         status: 'error',
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Your training summary could not load.',
+        message: localizeError(error, t('loadError')),
       });
     }
-  }, [database, workouts, unit]);
+  }, [database, workouts, unit, t]);
   useFocusEffect(
     useCallback(() => {
       refresh();

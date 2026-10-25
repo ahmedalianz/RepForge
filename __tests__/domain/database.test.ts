@@ -14,10 +14,18 @@ test('migrations run once, preserve data, and enable foreign keys', () => {
   const db = openDatabase();
   try {
     migrateDatabase(db);
-    savePreferences(db, { theme: 'light', weightUnit: 'lb' });
+    savePreferences(db, {
+      theme: 'light',
+      weightUnit: 'lb',
+      language: 'en-US',
+    });
     migrateDatabase(db);
-    expect(loadPreferences(db)).toEqual({ theme: 'light', weightUnit: 'lb' });
-    expect(db.execute('PRAGMA user_version').rows[0]?.user_version).toBe(3);
+    expect(loadPreferences(db)).toEqual({
+      theme: 'light',
+      weightUnit: 'lb',
+      language: 'en-US',
+    });
+    expect(db.execute('PRAGMA user_version').rows[0]?.user_version).toBe(4);
     expect(db.execute('PRAGMA foreign_keys').rows[0]?.foreign_keys).toBe(1);
     expect(() =>
       db.execute(

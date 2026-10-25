@@ -1,16 +1,20 @@
+import { formatNumber, unitLabel } from '../../../localization/format';
+import { t } from '../../../localization/i18n';
 import type { WeightUnit } from './strength';
 import type { WorkoutExercise, WorkoutSet } from './types';
 import { formatLoad } from './weightPresentation';
 export function formatSetPerformance(
-  set: WorkoutSet,
+  set: Pick<WorkoutSet, 'weightKg' | 'loadType' | 'reps'>,
   unit: WeightUnit,
   full = false,
 ): string {
   const load =
     set.weightKg === null
-      ? 'BW'
-      : `${formatLoad(set.weightKg, unit)}${full ? ` ${unit}${set.loadType === 'assisted' ? ' assist' : ''}` : ''}`;
-  return `${load} × ${set.reps}${full ? ' reps' : ''}`;
+      ? t('workouts:bodyweight')
+      : `${formatLoad(set.weightKg, unit)}${full ? ` ${unitLabel(unit)}${set.loadType === 'assisted' ? t('workouts:assistSuffix') : ''}` : ''}`;
+  return full
+    ? t('workouts:performance', { load, reps: formatNumber(set.reps) })
+    : `${load} × ${formatNumber(set.reps)}`;
 }
 export function getPreviousPerformance(
   group: WorkoutExercise,
@@ -18,8 +22,11 @@ export function getPreviousPerformance(
 ) {
   if (group.previousBest) {
     return {
-      label: 'Previous Best:',
-      value: `${formatLoad(group.previousBest.weightKg, unit)} ${unit} × ${group.previousBest.reps} reps`,
+      label: t('workouts:previousBest'),
+      value: t('workouts:performance', {
+        load: `${formatLoad(group.previousBest.weightKg, unit)} ${unitLabel(unit)}`,
+        reps: formatNumber(group.previousBest.reps),
+      }),
       record: true,
     };
   }
@@ -28,10 +35,10 @@ export function getPreviousPerformance(
     working[working.length - 1] ??
     group.previousSets[group.previousSets.length - 1];
   return {
-    label: 'Previous Set:',
+    label: t('workouts:previousSet'),
     value: last
       ? formatSetPerformance(last, unit, true)
-      : 'No previous session',
+      : t('workouts:noPrevious'),
     record: false,
   };
 }

@@ -1,20 +1,18 @@
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useTheme } from '../../app/theme/ThemeProvider';
 import { spacing } from '../../app/theme/tokens';
 import { Text } from './Text';
-export function LoadingState({
-  message = 'Opening your training log…',
-}: {
-  message?: string;
-}) {
+export function LoadingState({ message }: { message?: string }) {
   const { colors } = useTheme();
+  const { t } = useTranslation('common');
   return (
     <View
       accessibilityRole="progressbar"
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       <ActivityIndicator color={colors.primary} />
-      <Text>{message}</Text>
+      {message === '' ? null : <Text>{message ?? t('loading')}</Text>}
     </View>
   );
 }

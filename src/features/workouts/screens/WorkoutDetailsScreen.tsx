@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../localization/i18n';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +21,7 @@ export function WorkoutDetailsScreen({
   route,
   navigation,
 }: RootScreenProps<'WorkoutDetails'>) {
+  useTranslation();
   const vm = useActiveWorkout(route.params.sessionId);
   const actions = useWorkoutActions(vm, navigation);
   const { colors } = useTheme();
@@ -27,21 +30,21 @@ export function WorkoutDetailsScreen({
   const pickerError =
     vm.notice?.kind === 'error' ? vm.notice.message : undefined;
   if (vm.loading || (vm.session && !vm.editor && !vm.notice)) {
-    return <LoadingState message="Opening your workout…" />;
+    return <LoadingState message={t('workouts:opening')} />;
   }
   if (!vm.session || !vm.editor) {
     return (
       <Screen>
         <EmptyState
-          title="Session unavailable"
-          message={
-            vm.error ??
-            vm.notice?.message ??
-            'This workout could not be found on this device.'
-          }
+          title={t('workouts:unavailable')}
+          message={vm.error ?? vm.notice?.message ?? t('workouts:notFound')}
         >
-          <Button title="Retry" onPress={vm.retry} />
-          <Button title="Back" variant="secondary" onPress={actions.minimize} />
+          <Button title={t('common:retry')} onPress={vm.retry} />
+          <Button
+            title={t('common:back')}
+            variant="secondary"
+            onPress={actions.minimize}
+          />
         </EmptyState>
       </Screen>
     );
@@ -61,9 +64,12 @@ export function WorkoutDetailsScreen({
         title={vm.editor.title}
         session={vm.session}
         canFinish={vm.completedSets > 0}
+        //TODO: minimize should show the active workout as small pressable with time running so user
+        // can press and continue
         onMinimize={actions.minimize}
         onFinish={actions.finish}
       />
+      {/* //TODO: need to make beeb when coutdown end */}
       {vm.isActive ? (
         <RestCountdown
           runtime={vm.editor.runtime}
@@ -85,6 +91,7 @@ export function WorkoutDetailsScreen({
           </Text>
         </View>
       ) : null}
+      {/* //TODO: there should be control for how much time the rest is */}
       <WorkoutSetList
         vm={vm}
         onAddExercise={() => setPickerVisible(true)}

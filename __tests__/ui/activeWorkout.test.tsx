@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { PromptProvider } from '../../src/app/providers/PromptProvider';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { openDatabase } from '../support/database';
@@ -27,14 +27,13 @@ async function begin() {
   await render(
     <SafeAreaProvider>
       <ThemeProvider>
-        <RootNavigator />
+        <PromptProvider>
+          <RootNavigator />
+        </PromptProvider>
       </ThemeProvider>
     </SafeAreaProvider>,
   );
   await fireEvent.press(screen.getByRole('button', { name: 'Start Workout' }));
-  await fireEvent.press(
-    await screen.findByRole('button', { name: 'Begin Session' }),
-  );
 }
 test('real repository flow: pick, validate, log, rest, finish, and update the dashboard', async () => {
   await begin();
@@ -78,12 +77,8 @@ test('real repository flow: pick, validate, log, rest, finish, and update the da
   expect(
     mockWorkouts.listSets(id).filter(set => set.completedAt !== null),
   ).toHaveLength(1);
-  jest
-    .spyOn(Alert, 'alert')
-    .mockImplementation((_title, _message, buttons) =>
-      buttons?.find(button => button.text === 'Finish Workout')?.onPress?.(),
-    );
   await fireEvent.press(screen.getByRole('button', { name: 'Finish' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Finish Workout' }));
   expect(mockWorkouts.getSession(id)?.status).toBe('completed');
   expect(mockWorkouts.getActiveSession()).toBeNull();
   expect(await screen.findByText('1 workout completed')).toBeOnTheScreen();
@@ -112,4 +107,36 @@ test('minimize and resume keep valid drafts and selected set', async () => {
     await screen.findByLabelText('Load for set 1 in kg'),
   ).toHaveDisplayValue('82.5');
   expect(screen.getByLabelText('Reps for set 1')).toHaveDisplayValue('6');
+});
+
+test('tab-bar quick start resumes the same session from another tab without creating a duplicate', async () => {
+  await begin();
+  expect(await screen.findByText('Build your workout')).toBeOnTheScreen();
+  const id = mockWorkouts.getActiveSession()!.id;
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Minimize workout' }),
+  );
+  await fireEvent.press(screen.getByRole('tab', { name: 'Progress' }));
+  await fireEvent.press(
+    screen.getByRole('button', { name: 'Quick start workout' }),
+  );
+  expect(await screen.findByText('Build your workout')).toBeOnTheScreen();
+  expect(mockWorkouts.getActiveSession()?.id).toBe(id);
+  expect(
+    mockDatabase.execute('SELECT COUNT(*) AS count FROM workout_sessions')
+      .rows[0]?.count,
+  ).toBe(1);
+});
+
+test('failed session creation reports an error and keeps Home available', async () => {
+  mockDatabase.execute(
+    "CREATE TRIGGER reject_session BEFORE INSERT ON workout_sessions BEGIN SELECT RAISE(ABORT, 'cannot create workout'); END",
+  );
+  await begin();
+  expect(screen.getByText('Workout could not start')).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+  expect(mockWorkouts.getActiveSession()).toBeNull();
+  expect(
+    screen.getByRole('button', { name: 'Start Workout' }),
+  ).toBeOnTheScreen();
 });

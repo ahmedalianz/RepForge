@@ -1,4 +1,13 @@
 import {
+  formatDate,
+  formatPercent,
+  unitLabel,
+  ltrText,
+} from '../../../localization/format';
+import { t } from '../../../localization/i18n';
+import { getExerciseName } from '../../../localization/exercises';
+import { formatDuration } from '../../../shared/utils/formatDuration';
+import {
   estimateOneRepMax,
   DEFAULT_EPLEY_OPTIONS,
   type WeightUnit,
@@ -13,20 +22,15 @@ import { formatLoad } from '../../workouts/domain/weightPresentation';
 const MINUTE_MS = 60_000;
 const DAY_MS = 24 * 60 * MINUTE_MS;
 
-export function formatDuration(milliseconds: number): string {
-  const minutes = Math.floor(milliseconds / MINUTE_MS);
-  const hours = Math.floor(minutes / 60);
-  return hours ? `${hours}h${minutes % 60}m` : `${minutes}m`;
-}
 function relativeDay(timestamp: number, now: number): string {
   if (localDayKey(timestamp) === localDayKey(now)) {
-    return 'Today';
+    return t('home:today');
   }
   if (
     localDayKey(timestamp) ===
     localDayKey(shiftDays(localDayStart(now), -1).getTime())
   ) {
-    return 'Yesterday';
+    return t('home:yesterday');
   }
   const date = new Date(timestamp);
   const today = new Date(now);
@@ -35,9 +39,9 @@ function relativeDay(timestamp: number, now: number): string {
       Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())) /
     DAY_MS;
   if (daysAgo > 1 && daysAgo < 7) {
-    return `${daysAgo} days ago`;
+    return t('home:daysAgo', { count: daysAgo });
   }
-  return new Date(timestamp).toLocaleDateString('en', {
+  return formatDate(timestamp, {
     month: 'short',
     day: 'numeric',
   });
@@ -50,10 +54,10 @@ export function getDashboardPresentation(
   const hour = new Date(now).getHours();
   const greeting =
     hour < 12
-      ? 'Good morning, lifter'
+      ? t('home:morning')
       : hour < 18
-        ? 'Good afternoon, lifter'
-        : 'Good evening, lifter';
+        ? t('home:afternoon')
+        : t('home:evening');
   const record = snapshot.recentRecord;
   const estimatedKg =
     record && record.reps <= DEFAULT_EPLEY_OPTIONS.maxReps
@@ -72,17 +76,20 @@ export function getDashboardPresentation(
   const maxVolume = Math.max(...snapshot.days.map(day => day.volumeKg), 1);
   return {
     greeting,
-    unit,
-    streak: `${snapshot.streakDays} ${snapshot.streakDays === 1 ? 'Day' : 'Days'}`,
+    unit: unitLabel(unit),
+    streak: t('home:streak', { count: snapshot.streakDays }),
     weeklyCount: snapshot.weeklyWorkouts,
     totalWorkouts: snapshot.totalWorkouts,
-    weeklyWorkouts: `${snapshot.weeklyWorkouts} ${snapshot.weeklyWorkouts === 1 ? 'workout' : 'workouts'} completed`,
+    weeklyWorkouts: t('home:completedWorkouts', {
+      count: snapshot.weeklyWorkouts,
+    }),
     weeklyVolume: formatLoad(snapshot.weeklyVolumeKg, unit),
     compactVolume: formatLoad(snapshot.weeklyVolumeKg, unit, true),
     activeTime: formatDuration(snapshot.activeTimeMs),
     days: snapshot.days.map(day => ({
       ...day,
-      initial: day.label[0] ?? '',
+      label: formatDate(day.date, { weekday: 'long' }),
+      initial: formatDate(day.date, { weekday: 'narrow' }),
       volume: formatLoad(day.volumeKg, unit, true),
       barRatio: day.volumeKg / maxVolume,
       barTone:
@@ -100,26 +107,31 @@ export function getDashboardPresentation(
             ? 1
             : 0.35 + (day.volumeKg / maxVolume) * 0.25,
       statusLabel: day.isToday
-        ? 'TODAY'
+        ? t('home:today')
         : day.workouts
           ? formatLoad(day.volumeKg, unit, true)
           : '—',
-      accessibilityLabel: `${day.label}${day.isToday ? ', today' : ''}, ${day.workouts} completed workouts, ${formatLoad(day.volumeKg, unit)} ${unit} external load`,
+      accessibilityLabel: t('home:dayAccessibility', {
+        day: formatDate(day.date, { weekday: 'long' }),
+        count: day.workouts,
+        volume: formatLoad(day.volumeKg, unit),
+        unit: unitLabel(unit),
+      }),
     })),
     record: record
       ? {
           ...record,
+          exerciseName: getExerciseName(record.exerciseId, record.exerciseName),
           date: relativeDay(record.completedAt, now),
           weight: formatLoad(record.weightKg, unit),
           delta:
             delta !== null && delta > 0
-              ? `+${formatLoad(delta, unit)} ${unit}`
+              ? ltrText(`+${formatLoad(delta, unit)} ${unitLabel(unit)}`)
               : null,
         }
       : null,
     estimate: estimatedKg === null ? '—' : formatLoad(estimatedKg, unit),
-    loadChange:
-      change === null ? '—' : `${change > 0 ? '+' : ''}${change.toFixed(1)}%`,
+    loadChange: change === null ? '—' : formatPercent(change, 1, true),
     hasComparison: change !== null,
   };
 }

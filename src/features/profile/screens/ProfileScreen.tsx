@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { LanguageSettings } from '../../../localization/LanguageSettings';
 import { useState } from 'react';
 import { usePreferencesStore } from '../../../app/config/preferencesStore';
 import { useDatabase } from '../../../app/providers/DatabaseProvider';
@@ -10,6 +12,8 @@ import { Card } from '../../../shared/components/Card';
 import { Text } from '../../../shared/components/Text';
 import { Button } from '../../../shared/components/Button';
 export function ProfileScreen() {
+  const { t } = useTranslation('settings');
+  const language = usePreferencesStore(state => state.language);
   const theme = usePreferencesStore(state => state.theme);
   const weightUnit = usePreferencesStore(state => state.weightUnit);
   const { database } = useDatabase();
@@ -19,51 +23,46 @@ export function ProfileScreen() {
       savePreferences(database, preferences);
       usePreferencesStore.getState().setPreferences(preferences);
       setError(null);
-    } catch (failure) {
-      setError(
-        failure instanceof Error
-          ? failure.message
-          : 'Preferences could not be saved',
-      );
+    } catch {
+      setError(t('saveError'));
     }
   }
   return (
     <Screen>
-      <Card title="Appearance">
+      <LanguageSettings />
+      <Card title={t('appearance')}>
         <Button
-          title="Dark"
+          title={t('dark')}
           selected={theme === 'dark'}
           variant="secondary"
-          onPress={() => update({ theme: 'dark', weightUnit })}
+          onPress={() => update({ theme: 'dark', weightUnit, language })}
         />
         <Button
-          title="Light"
+          title={t('light')}
           selected={theme === 'light'}
           variant="secondary"
-          onPress={() => update({ theme: 'light', weightUnit })}
+          onPress={() => update({ theme: 'light', weightUnit, language })}
         />
         <Button
-          title="Use Device Theme"
+          title={t('systemTheme')}
           selected={theme === 'system'}
           variant="secondary"
-          onPress={() => update({ theme: 'system', weightUnit })}
+          onPress={() => update({ theme: 'system', weightUnit, language })}
         />
       </Card>
-      <Card title="Weight unit">
-        <Text tone="muted">
-          Weights are stored in kilograms and converted for display.
-        </Text>
+      <Card title={t('weightUnit')}>
+        <Text tone="muted">{t('weightDescription')}</Text>
         <Button
-          title="Kilograms"
+          title={t('kilograms')}
           selected={weightUnit === 'kg'}
           variant="secondary"
-          onPress={() => update({ theme, weightUnit: 'kg' })}
+          onPress={() => update({ theme, weightUnit: 'kg', language })}
         />
         <Button
-          title="Pounds"
+          title={t('pounds')}
           selected={weightUnit === 'lb'}
           variant="secondary"
-          onPress={() => update({ theme, weightUnit: 'lb' })}
+          onPress={() => update({ theme, weightUnit: 'lb', language })}
         />
       </Card>
       {error ? (

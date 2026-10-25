@@ -1,0 +1,21 @@
+{
+  "load": "Enter a finite non-negative load.",
+  "reps": "Enter a whole rep count; completed sets need at least one rep.",
+  "rpe": "RPE must be between 0 and 10, or left blank.",
+  "exerciseNotFound": "Exercise not found",
+  "workoutNotFound": "Workout not found",
+  "alreadyAdded": "This exercise is already in your workout",
+  "exerciseMissing": "Exercise is not in this workout",
+  "editableSetMissing": "Editable set not found",
+  "setMissing": "Set not found",
+  "setUnavailable": "This set is not available to log",
+  "completedSetMissing": "Completed set not found",
+  "workoutInactive": "This workout is no longer active",
+  "rpeRange": "RPE must be between 0 and 10",
+  "completedReps": "A completed set needs at least one rep",
+  "loadMismatch": "Set load type must match its exercise",
+  "completionTime": "Set completion precedes workout start",
+  "moveSet": "Cannot move a set between workouts",
+  "createWorkout": "Workout could not be created",
+  "needCompletedSet": "Log at least one set before finishing your workout"
+}

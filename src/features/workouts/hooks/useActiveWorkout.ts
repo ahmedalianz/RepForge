@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import { localizeError } from '../../../localization/errors';
+import { t } from '../../../localization/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { useDatabase } from '../../../app/providers/DatabaseProvider';
 import { usePreferencesStore } from '../../../app/config/preferencesStore';
@@ -7,6 +10,7 @@ import { useWorkoutSession } from './useWorkoutSession';
 import { useSetInput } from './useSetInput';
 export type WorkoutNotice = { kind: 'error' | 'success'; message: string };
 export function useActiveWorkout(sessionId: string) {
+  useTranslation();
   const { workouts } = useDatabase();
   const lifecycle = useWorkoutSession(sessionId);
   const unit = usePreferencesStore(state => state.weightUnit);
@@ -21,9 +25,7 @@ export function useActiveWorkout(sessionId: string) {
     try {
       setEditor(workouts.getEditorState(sessionId));
     } catch (failure) {
-      reportError(
-        failure instanceof Error ? failure.message : 'Workout could not load',
-      );
+      reportError(localizeError(failure, t('workouts:loadError')));
     }
   }, [workouts, sessionId, reportError]);
   useEffect(() => {
@@ -55,11 +57,7 @@ export function useActiveWorkout(sessionId: string) {
         refresh();
         return true;
       } catch (failure) {
-        reportError(
-          failure instanceof Error
-            ? failure.message
-            : 'Changes could not be saved',
-        );
+        reportError(localizeError(failure, t('workouts:saveError')));
         return false;
       }
     },
@@ -89,9 +87,7 @@ export function useActiveWorkout(sessionId: string) {
       );
       return true;
     } catch (failure) {
-      reportError(
-        failure instanceof Error ? failure.message : 'Draft could not be saved',
-      );
+      reportError(localizeError(failure, t('workouts:draftError')));
       return false;
     }
   };
@@ -135,9 +131,7 @@ export function useActiveWorkout(sessionId: string) {
     if (run(() => workouts.completeSet(parsed))) {
       setNotice({
         kind: 'success',
-        message: pr
-          ? 'Set saved • New recorded load PR'
-          : 'Set saved • Rest timer started',
+        message: pr ? t('workouts:savedPr') : t('workouts:savedRest'),
       });
     }
   }

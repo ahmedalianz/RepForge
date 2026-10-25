@@ -1,3 +1,4 @@
+import { readLoadRecords } from '../../../database/repositories/loadRecordRepository';
 import type { Database } from '../../../database/types';
 import {
   calculateTrainingStreak,
@@ -6,7 +7,6 @@ import {
   shiftDays,
   LOAD_COMPARISON_DAYS,
   type DashboardSnapshot,
-  type LoadRecord,
 } from '../domain/dashboard';
 function volumeBetween(database: Database, start: number, end: number): number {
   return Number(
@@ -51,29 +51,7 @@ export function readDashboard(
         [now],
       )
       .rows.map(row => String(row.day));
-    // A PR means a new external-load maximum for that exercise, regardless of rep count.
-    // Window ordering resolves ties deterministically. Estimated PRs never enter this query.
-    const row = tx.execute(
-      `WITH history AS (
-    SELECT *, MAX(weight_kg) OVER (PARTITION BY exercise_id ORDER BY completed_at, id ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS previous_weight
-    FROM completed_external_working_sets WHERE completed_at <= ?
-   ) SELECT history.*, e.name FROM history JOIN exercises e ON e.id = history.exercise_id
-   WHERE weight_kg > 0 AND (previous_weight IS NULL OR weight_kg > previous_weight)
-   ORDER BY completed_at DESC, id DESC LIMIT 1`,
-      [now],
-    ).rows[0];
-    const recentRecord: LoadRecord | null = row
-      ? {
-          setId: String(row.id),
-          exerciseId: String(row.exercise_id),
-          exerciseName: String(row.name),
-          weightKg: Number(row.weight_kg),
-          previousWeightKg:
-            row.previous_weight === null ? null : Number(row.previous_weight),
-          reps: Number(row.reps),
-          completedAt: Number(row.completed_at),
-        }
-      : null;
+    const recentRecord = readLoadRecords(tx, now, 1)[0] ?? null;
     const recentStart = shiftDays(
       new Date(now + 1),
       -LOAD_COMPARISON_DAYS,

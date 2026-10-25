@@ -1,3 +1,5 @@
+import { PromptProvider } from './src/app/providers/PromptProvider';
+import { LocalizationProvider } from './src/localization/LocalizationProvider';
 import { StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -21,9 +23,13 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <AppContent />
-        </ThemeProvider>
+        <LocalizationProvider>
+          <ThemeProvider>
+            <PromptProvider>
+              <AppContent />
+            </PromptProvider>
+          </ThemeProvider>
+        </LocalizationProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

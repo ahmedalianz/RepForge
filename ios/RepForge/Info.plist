@@ -6,6 +6,11 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ar</string>
+		<string>en</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>RepForge</string>
 	<key>CFBundleExecutable</key>
@@ -73,6 +78,9 @@
 	<false/>
 	<key>UIAppFonts</key>
 	<array>
+		<string>fonts/IBMPlexSansArabic-Regular.ttf</string>
+		<string>fonts/IBMPlexSansArabic-SemiBold.ttf</string>
+		<string>fonts/IBMPlexSansArabic-Bold.ttf</string>
 		<string>fonts/PlusJakartaSans-SemiBold.ttf</string>
 		<string>fonts/PlusJakartaSans-Regular.ttf</string>
 		<string>fonts/PlusJakartaSans-Bold.ttf</string>

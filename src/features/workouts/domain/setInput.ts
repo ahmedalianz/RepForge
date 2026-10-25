@@ -1,3 +1,5 @@
+import { normalizeNumericInput } from '../../../localization/format';
+import { t } from '../../../localization/i18n';
 import { convertWeight, type WeightUnit } from './strength';
 import type { WorkoutExercise, WorkoutSet } from './types';
 export type SetInput = { weight: string; reps: string; rpe: string };
@@ -15,7 +17,7 @@ export function getSetInput(set: WorkoutSet, unit: WeightUnit): SetInput {
   };
 }
 function decimal(text: string): number | null {
-  const value = text.trim().replace(',', '.');
+  const value = normalizeNumericInput(text).replace(',', '.').trim();
   return /^(?:\d+(?:\.\d*)?|\.\d+)$/.test(value) &&
     Number.isFinite(Number(value))
     ? Number(value)
@@ -38,7 +40,7 @@ export function parseSetInput(
     input.reps.trim() === '' && !requireComplete ? 0 : decimal(input.reps);
   const rpe = input.rpe.trim() === '' ? null : decimal(input.rpe);
   if (base.loadType !== 'bodyweight' && weight === null) {
-    return { valid: false, message: 'Enter a finite non-negative load.' };
+    return { valid: false, message: t('validation:load') };
   }
   if (
     reps === null ||
@@ -47,13 +49,13 @@ export function parseSetInput(
   ) {
     return {
       valid: false,
-      message: 'Enter a whole rep count; completed sets need at least one rep.',
+      message: t('validation:reps'),
     };
   }
   if (input.rpe.trim() !== '' && (rpe === null || rpe > 10)) {
     return {
       valid: false,
-      message: 'RPE must be between 0 and 10, or left blank.',
+      message: t('validation:rpe'),
     };
   }
   const weightKg =

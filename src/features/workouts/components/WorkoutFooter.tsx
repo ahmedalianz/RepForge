@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../localization/i18n';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import { spacing } from '../../../app/theme/tokens';
@@ -17,19 +19,20 @@ export function WorkoutFooter({
   onDiscard: () => void;
   onBack: () => void;
 }) {
+  useTranslation();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   if (!editable) {
     return (
       <View style={styles.wrapper}>
-        <Button title="Back to Home" onPress={onBack} />
+        <Button title={t('workouts:home')} onPress={onBack} />
       </View>
     );
   }
   return (
     <View style={styles.wrapper}>
       <Button
-        title="Add Exercise"
+        title={t('workouts:addExercise')}
         leadingIcon="addCircle"
         variant="secondary"
         onPress={onAddExercise}
@@ -43,7 +46,7 @@ export function WorkoutFooter({
       >
         <View style={styles.discard}>
           <Button
-            title="Discard"
+            title={t('workouts:discard')}
             leadingIcon="trash"
             size="compact"
             variant="destructive"
@@ -52,7 +55,7 @@ export function WorkoutFooter({
         </View>
         <View style={styles.finish}>
           <Button
-            title="Save & Finish Workout"
+            title={t('workouts:saveFinish')}
             leadingIcon="checkCircle"
             size="compact"
             disabled={!canFinish}

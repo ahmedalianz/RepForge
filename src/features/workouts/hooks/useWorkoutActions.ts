@@ -1,10 +1,16 @@
-import { Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../../localization/format';
+import { getExerciseName } from '../../../localization/exercises';
+import { t } from '../../../localization/i18n';
+import { usePrompt } from '../../../app/providers/PromptProvider';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import type { ActiveWorkoutViewModel } from './useActiveWorkout';
 export function useWorkoutActions(
   vm: ActiveWorkoutViewModel,
   navigation: RootScreenProps<'WorkoutDetails'>['navigation'],
 ) {
+  useTranslation();
+  const showPrompt = usePrompt();
   function minimize() {
     if (!vm.checkpoint()) {
       return;
@@ -22,16 +28,19 @@ export function useWorkoutActions(
   }
   function finish() {
     if (!vm.completedSets) {
-      vm.reportError('Log at least one set before finishing your workout');
+      vm.reportError(t('workouts:needSet'));
       return;
     }
     if (vm.pendingSets) {
-      Alert.alert(
-        'Finish workout?',
-        `${vm.pendingSets} unfinished sets will remain unlogged. Your completed sets are saved.`,
+      showPrompt(
+        t('workouts:finishQuestion'),
+        t('workouts:unfinished', { count: formatNumber(vm.pendingSets) }),
         [
-          { text: 'Keep Training', style: 'cancel' },
-          { text: 'Finish Workout', onPress: () => finishNow('completed') },
+          { text: t('workouts:keepTraining'), style: 'cancel' },
+          {
+            text: t('workouts:finishWorkout'),
+            onPress: () => finishNow('completed'),
+          },
         ],
       );
     } else {
@@ -39,40 +48,40 @@ export function useWorkoutActions(
     }
   }
   function discard() {
-    Alert.alert(
-      'Discard workout?',
-      'This session will be marked abandoned and will not count toward your progress.',
-      [
-        { text: 'Keep Training', style: 'cancel' },
-        {
-          text: 'Discard Workout',
-          style: 'destructive',
-          onPress: () => finishNow('abandoned'),
-        },
-      ],
-    );
+    showPrompt(t('workouts:discardQuestion'), t('workouts:discardMessage'), [
+      { text: t('workouts:keepTraining'), style: 'cancel' },
+      {
+        text: t('workouts:discardWorkout'),
+        style: 'destructive',
+        onPress: () => finishNow('abandoned'),
+      },
+    ]);
   }
   function setOptions() {
     if (!vm.activeSet) {
       return;
     }
-    Alert.alert(
-      'Set options',
-      `Set ${vm.selected?.sets.findIndex(set => set.id === vm.activeSet?.id)! + 1}`,
+    showPrompt(
+      t('workouts:setOptions'),
+      t('workouts:setNumber', {
+        number: formatNumber(
+          vm.selected?.sets.findIndex(set => set.id === vm.activeSet?.id)! + 1,
+        ),
+      }),
       [
         {
           text:
             vm.activeSet.kind === 'working'
-              ? 'Mark as Warm-up'
-              : 'Mark as Working Set',
+              ? t('workouts:warmupAction')
+              : t('workouts:workingAction'),
           onPress: () => vm.toggleKind(),
         },
         {
-          text: 'Delete Set',
+          text: t('workouts:deleteSet'),
           style: 'destructive',
           onPress: () => vm.removeSet(),
         },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common:cancel'), style: 'cancel' },
       ],
     );
   }
@@ -80,33 +89,37 @@ export function useWorkoutActions(
     if (!vm.selected) {
       return;
     }
-    Alert.alert(vm.selected.exercise.name, 'Exercise options', [
-      {
-        text: 'Exercise Details',
-        onPress: () =>
-          navigation.navigate('ExerciseDetails', {
-            exerciseId: vm.selected!.exercise.id,
-          }),
-      },
-      {
-        text: 'Remove Exercise',
-        style: 'destructive',
-        onPress: () =>
-          Alert.alert(
-            'Remove exercise?',
-            'Its sets will be removed from this session.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Remove',
-                style: 'destructive',
-                onPress: () => vm.removeExercise(),
-              },
-            ],
-          ),
-      },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
+    showPrompt(
+      getExerciseName(vm.selected.exercise.id, vm.selected.exercise.name),
+      t('workouts:exerciseOptions'),
+      [
+        {
+          text: t('workouts:exerciseDetails'),
+          onPress: () =>
+            navigation.navigate('ExerciseDetails', {
+              exerciseId: vm.selected!.exercise.id,
+            }),
+        },
+        {
+          text: t('workouts:removeExercise'),
+          style: 'destructive',
+          onPress: () =>
+            showPrompt(
+              t('workouts:removeQuestion'),
+              t('workouts:removeMessage'),
+              [
+                { text: t('common:cancel'), style: 'cancel' },
+                {
+                  text: t('workouts:remove'),
+                  style: 'destructive',
+                  onPress: () => vm.removeExercise(),
+                },
+              ],
+            ),
+        },
+        { text: t('common:cancel'), style: 'cancel' },
+      ],
+    );
   }
   return { minimize, finish, discard, setOptions, exerciseOptions };
 }

@@ -1,11 +1,13 @@
 import type { Database } from '../types';
 import { initialSchema } from './001_initial';
 import { dashboardSchema } from './002_dashboard';
+import { languageSchema } from './004_language';
 import { workoutEditorSchema } from './003_workout_editor';
 export const migrations = [
   { version: 1, statements: initialSchema },
   { version: 2, statements: dashboardSchema },
   { version: 3, statements: workoutEditorSchema },
+  { version: 4, statements: languageSchema },
 ] as const;
 export function migrateDatabase(database: Database): void {
   database.execute('PRAGMA foreign_keys = ON');

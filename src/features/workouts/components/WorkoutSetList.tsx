@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../../localization/format';
+import { t } from '../../../localization/i18n';
 import { FlatList, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../app/theme/ThemeProvider';
@@ -37,6 +40,7 @@ export function WorkoutSetList({
   onDiscard,
   onBack,
 }: Props) {
+  useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -91,8 +95,8 @@ export function WorkoutSetList({
         ) : (
           <View style={styles.empty}>
             <EmptyState
-              title="Build your workout"
-              message="Add an exercise to start logging. Your sets and unfinished session are saved on this device."
+              title={t('workouts:build')}
+              message={t('workouts:buildMessage')}
             />
           </View>
         )
@@ -127,7 +131,7 @@ export function WorkoutSetList({
                 <>
                   <View style={styles.action}>
                     <Button
-                      title="Add Set"
+                      title={t('workouts:addSet')}
                       leadingIcon="add"
                       variant="secondary"
                       onPress={() => vm.addSet()}
@@ -135,7 +139,7 @@ export function WorkoutSetList({
                   </View>
                   <View style={styles.action}>
                     <Button
-                      title="Set Options"
+                      title={t('workouts:setOptions')}
                       leadingIcon="more"
                       variant="secondary"
                       disabled={!vm.activeSet}
@@ -145,7 +149,11 @@ export function WorkoutSetList({
                 </>
               ) : (
                 <Text tone="muted">
-                  Session {vm.session?.status}. Completed sets are saved.
+                  {t('workouts:status', {
+                    status: t(
+                      `workouts:status_${vm.session?.status ?? 'completed'}`,
+                    ),
+                  })}
                 </Text>
               )}
             </View>
@@ -155,7 +163,7 @@ export function WorkoutSetList({
           return (
             <View style={styles.queueTitle}>
               <Text variant="labelMd" tone="muted">
-                WORKOUT EXERCISES
+                {t('workouts:workoutExercises')}
               </Text>
               <Text
                 variant="labelSm"
@@ -164,7 +172,9 @@ export function WorkoutSetList({
                   { color: colors.muted, backgroundColor: colors.surfaceHigh },
                 ]}
               >
-                {item.remaining} Left
+                {t('workouts:remaining', {
+                  count: formatNumber(item.remaining),
+                })}
               </Text>
             </View>
           );

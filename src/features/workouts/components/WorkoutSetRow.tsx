@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber, unitLabel } from '../../../localization/format';
+import { t } from '../../../localization/i18n';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import {
@@ -39,13 +42,17 @@ function NumericInput({
 }: {
   field: SetInputField;
   value: string;
-  unit: string;
+  unit: WeightUnit;
   setIndex: number;
   onChange: Props['onChange'];
 }) {
   const { colors } = useTheme();
-  const labels = { weight: 'Load', reps: 'Reps', rpe: 'RPE' };
-  const label = field === 'weight' ? unit : field;
+  const labels = {
+    weight: t('workouts:load'),
+    reps: t('workouts:reps'),
+    rpe: t('workouts:rpe'),
+  };
+  const label = field === 'weight' ? unitLabel(unit) : labels[field];
   return (
     <View
       style={[
@@ -61,7 +68,16 @@ function NumericInput({
         selectTextOnFocus
         value={value}
         onChangeText={text => onChange(field, text)}
-        accessibilityLabel={`${labels[field]} for set ${setIndex}${field === 'weight' ? ` in ${unit}` : ''}`}
+        accessibilityLabel={
+          t('workouts:inputLabel', {
+            field: labels[field],
+            number: formatNumber(setIndex),
+          }) +
+          (field === 'weight'
+            ? t('workouts:inUnit', { unit: unitLabel(unit) })
+            : '')
+        }
+        accessibilityHint={field === 'rpe' ? t('workouts:rpeHelp') : undefined}
         keyboardType={field === 'reps' ? 'number-pad' : 'decimal-pad'}
         placeholder={field === 'rpe' ? '—' : '0'}
         placeholderTextColor={colors.subtle}
@@ -96,18 +112,21 @@ export function WorkoutSetRow({
   onSelect,
   onStep,
 }: Props) {
+  useTranslation();
   const { colors } = useTheme();
   const completed = set.completedAt !== null;
   const ordinal = index + 1;
   const previousLabel = previous ? formatSetPerformance(previous, unit) : '—';
   const loadLabel =
-    set.weightKg === null ? 'BW' : formatLoad(set.weightKg, unit);
-  const kind = set.kind === 'warmup' ? 'Warm' : 'Work';
+    set.weightKg === null
+      ? t('workouts:bodyweight')
+      : formatLoad(set.weightKg, unit);
+  const kind = set.kind === 'warmup' ? t('workouts:warm') : t('workouts:work');
   const actionLabel = completed
-    ? `Mark set ${ordinal} incomplete`
+    ? t('workouts:markIncomplete', { number: formatNumber(ordinal) })
     : active
-      ? `Complete set ${ordinal}`
-      : `Edit set ${ordinal}`;
+      ? t('workouts:completeSet', { number: formatNumber(ordinal) })
+      : t('workouts:editSet', { number: formatNumber(ordinal) });
   return (
     <View style={[styles.panel, { backgroundColor: colors.surface }]}>
       <Pressable
@@ -126,7 +145,7 @@ export function WorkoutSetRow({
       >
         {compact && active ? (
           <Text variant="labelSm" tone="muted">
-            Previous: {previousLabel}
+            {t('workouts:previousValue', { value: previousLabel })}
           </Text>
         ) : null}
         <View style={columns.row}>
@@ -135,7 +154,7 @@ export function WorkoutSetRow({
               variant={active ? 'headlineSm' : 'bodyBold'}
               style={{ color: active ? colors.primary : colors.subtle }}
             >
-              {ordinal}
+              {formatNumber(ordinal)}
             </Text>
             <Text
               variant="labelSm"
@@ -143,7 +162,7 @@ export function WorkoutSetRow({
               adjustsFontSizeToFit
               style={{ color: active ? colors.primary : colors.subtle }}
             >
-              {active ? 'ACTIVE' : kind}
+              {active ? t('workouts:active') : kind}
             </Text>
           </View>
           {!compact ? (
@@ -174,7 +193,7 @@ export function WorkoutSetRow({
             />
           ) : (
             <Text variant="bodyBold" tone="muted" style={columns.numeric}>
-              {set.reps || '—'}
+              {set.reps ? formatNumber(set.reps) : '—'}
             </Text>
           )}
           {active ? (
@@ -187,7 +206,12 @@ export function WorkoutSetRow({
             />
           ) : (
             <Text variant="labelMd" tone="muted" style={columns.numeric}>
-              {set.rpe === null ? '—' : set.rpe.toFixed(1)}
+              {set.rpe === null
+                ? '—'
+                : formatNumber(set.rpe, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1,
+                  })}
             </Text>
           )}
           <IconButton
@@ -205,7 +229,7 @@ export function WorkoutSetRow({
         ) : null}
         {active && set.loadType === 'assisted' ? (
           <Text variant="labelSm" tone="muted">
-            LOAD IS ASSISTANCE, NOT EXTERNAL WEIGHT
+            {t('workouts:assistanceNote')}
           </Text>
         ) : null}
       </Pressable>
@@ -239,6 +263,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
     height: sizes.touchTarget,
     textAlign: 'center',
+    writingDirection: 'ltr',
+    direction: 'ltr',
   },
   inputUnit: {
     position: 'absolute',

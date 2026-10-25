@@ -16,6 +16,16 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
       return
     }
 
+    let localizationBootstrapKey = "RepForge.localization.initialized"
+    if !UserDefaults.standard.bool(forKey: localizationBootstrapKey) {
+      // Seed before React reads layout direction; subsequent launches keep the user's choice.
+      let i18n = RCTI18nUtil.sharedInstance()
+      i18n?.allowRTL(true)
+      i18n?.forceRTL(true)
+      i18n?.swapLeftAndRight(inRTL: true)
+      UserDefaults.standard.set(true, forKey: localizationBootstrapKey)
+    }
+
     dependencyProvider = RCTAppDependencyProvider()
     reactNativeFactory = RCTReactNativeFactory(delegate: self)
     window = UIWindow(windowScene: windowScene)

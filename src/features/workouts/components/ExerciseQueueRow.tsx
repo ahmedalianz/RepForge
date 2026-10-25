@@ -1,3 +1,10 @@
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../localization/i18n';
+import { formatNumber } from '../../../localization/format';
+import {
+  getExerciseName,
+  getMuscleName,
+} from '../../../localization/exercises';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import { opacity, radii, sizes, spacing } from '../../../app/theme/tokens';
@@ -11,13 +18,16 @@ export function ExerciseQueueRow({
   group: WorkoutExercise;
   onSelect: () => void;
 }) {
+  useTranslation();
   const { colors } = useTheme();
   const completed = group.sets.filter(set => set.completedAt !== null).length;
   const done = group.sets.length > 0 && completed === group.sets.length;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Select ${group.exercise.name}`}
+      accessibilityLabel={t('workouts:selectExercise', {
+        name: getExerciseName(group.exercise.id, group.exercise.name),
+      })}
       onPress={onSelect}
       style={({ pressed }) => [
         styles.row,
@@ -29,10 +39,15 @@ export function ExerciseQueueRow({
         <Icon name={done ? 'checkCircle' : 'dumbbell'} color={colors.primary} />
       </View>
       <View style={styles.name}>
-        <Text variant="headlineSm">{group.exercise.name}</Text>
+        <Text variant="headlineSm">
+          {getExerciseName(group.exercise.id, group.exercise.name)}
+        </Text>
         <Text tone="muted">
-          {group.sets.length} {group.sets.length === 1 ? 'set' : 'sets'} •{' '}
-          {completed} logged • {group.exercise.primaryMuscleGroup}
+          {t('workouts:queueSummary', {
+            sets: formatNumber(group.sets.length),
+            completed: formatNumber(completed),
+            muscle: getMuscleName(group.exercise.primaryMuscleGroup),
+          })}
         </Text>
       </View>
       <Icon name="chevronDown" color={colors.subtle} />

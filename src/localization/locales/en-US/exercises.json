@@ -1,0 +1,56 @@
+{
+  "add": "Add Exercise",
+  "choose": "Choose Exercise",
+  "closePicker": "Close exercise picker",
+  "search": "Search exercises",
+  "searchPlaceholder": "Search exercises or muscle groups",
+  "empty": "No exercises found. Try another name.",
+  "loadError": "Exercises could not load",
+  "details": "Exercise Details",
+  "noneSelected": "none selected",
+  "planned": "Exercise reference: {{id}}. The exercise catalog and technique details are planned for the next phase.",
+  "addName": "Add {{name}}",
+  "selectName": "Select {{name}}",
+  "names": {
+    "barbell-bench-press": "Barbell Bench Press",
+    "incline-dumbbell-press": "Incline Dumbbell Press",
+    "standing-overhead-press": "Standing Overhead Press",
+    "barbell-back-squat": "Barbell Back Squat",
+    "barbell-deadlift": "Barbell Deadlift",
+    "pull-up": "Pull-up",
+    "assisted-pull-up": "Assisted Pull-up",
+    "push-up": "Push-up",
+    "dumbbell-curl": "Dumbbell Curl",
+    "cable-triceps-pushdown": "Cable Triceps Pushdown"
+  },
+  "muscles": {
+    "chest": "chest",
+    "front delts": "front delts",
+    "triceps": "triceps",
+    "shoulders": "shoulders",
+    "quads": "quads",
+    "glutes": "glutes",
+    "hamstrings": "hamstrings",
+    "posterior chain": "posterior chain",
+    "back": "back",
+    "biceps": "biceps"
+  },
+  "equipment": {
+    "barbell": "barbell",
+    "dumbbell": "dumbbell",
+    "pull-up bar": "pull-up bar",
+    "assisted machine": "assisted machine",
+    "none": "none",
+    "cable": "cable"
+  },
+  "types": {
+    "external": "external",
+    "bodyweight": "bodyweight",
+    "assisted": "assisted"
+  },
+  "categories": {
+    "compound": "compound",
+    "isolation": "isolation",
+    "other": "other"
+  }
+}

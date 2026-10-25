@@ -1,0 +1,22 @@
+{
+  "appearance": "Appearance",
+  "dark": "Dark",
+  "light": "Light",
+  "systemTheme": "Use Device Theme",
+  "weightUnit": "Weight unit",
+  "weightDescription": "Weights are stored in kilograms and converted for display.",
+  "kilograms": "Kilograms",
+  "pounds": "Pounds",
+  "saveError": "Preferences could not be saved",
+  "language": "Language / اللغة",
+  "arabic": "العربية (مصر)",
+  "english": "English (US)",
+  "changeLanguage": "Change language?",
+  "restartMessage": "The full language and layout change will take effect after you close and reopen RepForge. Your workout stays saved on this device. The current language stays active until then.",
+  "confirmLanguage": "Save language",
+  "pendingRestart": "Language saved. Close and reopen RepForge to apply the language and layout change.",
+  "activeWorkoutNotice": "You have an active workout. Its saved sets and rest deadline will be preserved. Nothing will restart automatically.",
+  "startupError": "Your training log could not open",
+  "storageError": "Unable to open local storage",
+  "readyRestart": "Saved for next launch"
+}

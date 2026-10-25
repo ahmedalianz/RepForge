@@ -1,3 +1,6 @@
+import { normalizeNumericInput } from '../../../localization/format';
+import { useTranslation } from 'react-i18next';
+import { t } from '../../../localization/i18n';
 import { useState } from 'react';
 import type { WeightUnit } from '../domain/strength';
 import type { WorkoutSet } from '../domain/types';
@@ -14,6 +17,7 @@ export function useSetInput(
   save: (set: WorkoutSet) => boolean,
   reportError: (message: string) => void,
 ) {
+  useTranslation();
   const [draft, setDraft] = useState<Draft | null>(null);
   const key = `${set?.id ?? ''}:${unit}`;
   const current =
@@ -27,6 +31,7 @@ export function useSetInput(
           weightEdited: false,
         };
   function change(field: SetInputField, text: string): void {
+    text = normalizeNumericInput(text).replace(',', '.');
     if (!set) {
       return;
     }
@@ -72,7 +77,7 @@ export function useSetInput(
     }
     const value = Number(current.input.weight.replace(',', '.'));
     if (!Number.isFinite(value)) {
-      reportError('Enter a load before using the plate stepper');
+      reportError(t('workouts:stepLoad'));
       return;
     }
     change(

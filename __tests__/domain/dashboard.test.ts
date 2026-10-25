@@ -41,7 +41,7 @@ test('v1 upgrades without losing saved preferences or workout data', () => {
       [now],
     );
     migrateDatabase(db);
-    expect(db.execute('PRAGMA user_version').rows[0]?.user_version).toBe(3);
+    expect(db.execute('PRAGMA user_version').rows[0]?.user_version).toBe(4);
     expect(db.execute('SELECT theme FROM app_preferences').rows[0]?.theme).toBe(
       'light',
     );
@@ -165,7 +165,7 @@ test('load comparison uses contiguous 30-day windows and a finite prior baseline
     expect(summary.previousVolumeKg).toBe(250);
     expect(summary.recentVolumeKg).toBe(500);
     expect(getDashboardPresentation(summary, 'kg', now).loadChange).toBe(
-      '+100.0%',
+      '+100%',
     );
   } finally {
     db.close();

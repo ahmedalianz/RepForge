@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../../../app/theme/ThemeProvider';
 import { opacity, radii, sizes, spacing } from '../../../app/theme/tokens';
@@ -12,6 +13,7 @@ export function WeeklyActivity({
 }: {
   dashboard: DashboardPresentation;
 }) {
+  const { t } = useTranslation('home');
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const dayDiameter = Math.min(
@@ -26,7 +28,7 @@ export function WeeklyActivity({
       <View style={[layout.between, layout.wrap]}>
         <View style={layout.column}>
           <Text variant="labelSm" tone="muted" style={layout.uppercase}>
-            Weekly Discipline
+            {t('weeklyDiscipline')}
           </Text>
           <Text variant="headlineSm">{dashboard.weeklyWorkouts}</Text>
         </View>
@@ -37,7 +39,7 @@ export function WeeklyActivity({
             size={sizes.smallIcon}
           />
           <Text variant="labelSm" style={{ color: colors.primary }}>
-            THIS WEEK
+            {t('thisWeek')}
           </Text>
         </View>
       </View>
@@ -108,16 +110,24 @@ export function WeeklyActivity({
       <View style={styles.distribution}>
         <View style={[layout.between, layout.wrap]}>
           <Text variant="labelSm" tone="muted">
-            Daily Load Distribution
+            {t('dailyDistribution')}
           </Text>
           <Text variant="labelSm">
-            {dashboard.weeklyVolume} {dashboard.unit} lifted
+            {t('lifted', {
+              volume: dashboard.weeklyVolume,
+              unit: dashboard.unit,
+            })}
           </Text>
         </View>
         <View
           style={styles.chart}
           accessible
-          accessibilityLabel={`Daily external working-set volume in ${dashboard.unit}. ${dashboard.days.map(day => `${day.label}: ${day.volume}`).join(', ')}`}
+          accessibilityLabel={t('distributionAccessibility', {
+            unit: dashboard.unit,
+            days: dashboard.days
+              .map(day => `${day.label}: ${day.volume}`)
+              .join(', '),
+          })}
         >
           {dashboard.days.map(day => (
             <View
@@ -147,6 +157,7 @@ export function WeeklyActivity({
 }
 const styles = StyleSheet.create({
   days: {
+    direction: 'ltr',
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.xs,
@@ -161,6 +172,7 @@ const styles = StyleSheet.create({
   dot: { width: spacing.xs, height: spacing.xs, borderRadius: radii.full },
   distribution: { gap: spacing.sm, paddingTop: spacing.xs },
   chart: {
+    direction: 'ltr',
     height: sizes.chart,
     flexDirection: 'row',
     alignItems: 'flex-end',

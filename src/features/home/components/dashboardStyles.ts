@@ -26,6 +26,7 @@ export const dashboardStyles = StyleSheet.create({
     gap: spacing.xs,
   },
   metricRow: {
+    direction: 'ltr',
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
